@@ -1,17 +1,18 @@
 import CoreLocation
-import Combine
 import SozoroCore
 
 /// CLLocationManager の薄い包み。ウェブ版でいちばん不安定だったところ。
 /// 許可は一度、方位は真北基準、精度も更新頻度もブラウザとは桁が違う。
 @MainActor
-final class LocationService: NSObject, ObservableObject {
-    @Published var coordinate: Coordinate?
-    @Published var accuracy: Double?
+final class LocationService: NSObject {
+    /// 位置か方位が動いたら呼ぶ。UIKit なので Combine は使わない。
+    var onUpdate: ((Coordinate?, Double?) -> Void)?
+    private(set) var coordinate: Coordinate?
+    private(set) var accuracy: Double?
     /// 真北からの度。取れないときは nil にして、文字盤を北固定にする。
-    @Published var heading: Double?
-    @Published var authorized = false
-    @Published var message: String?
+    private(set) var heading: Double?
+    private(set) var authorized = false
+    private(set) var message: String?
 
     private let manager = CLLocationManager()
 
@@ -47,13 +48,14 @@ extension LocationService: CLLocationManagerDelegate {
         let a = l.horizontalAccuracy
         Task { @MainActor in
             self.coordinate = c; self.accuracy = a; self.message = nil
+            self.onUpdate?(c, self.heading)
         }
     }
 
     nonisolated func locationManager(_ m: CLLocationManager, didUpdateHeading h: CLHeading) {
         // 真北が取れないときは磁北で代用しない。北固定のほうが嘘が少ない。
         let v = h.trueHeading >= 0 ? h.trueHeading : nil
-        Task { @MainActor in self.heading = v }
+        Task { @MainActor in self.heading = v; self.onUpdate?(self.coordinate, v) }
     }
 
     nonisolated func locationManagerDidChangeAuthorization(_ m: CLLocationManager) {

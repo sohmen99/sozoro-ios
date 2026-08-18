@@ -1,15 +1,16 @@
-import SwiftUI
+import UIKit
 
 @main
-struct SozoroApp: App {
-    @StateObject private var location = LocationService()
+final class AppDelegate: UIResponder, UIApplicationDelegate {
+    var window: UIWindow?
 
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .environmentObject(location)
-                .preferredColorScheme(.light)
-                .task { location.start() }
-        }
+    func application(_ app: UIApplication,
+                     didFinishLaunchingWithOptions o: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        let w = UIWindow(frame: UIScreen.main.bounds)
+        w.rootViewController = MapViewController()
+        w.overrideUserInterfaceStyle = .light
+        w.makeKeyAndVisible()
+        window = w
+        return true
     }
 }

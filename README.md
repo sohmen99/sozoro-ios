@@ -24,17 +24,25 @@ swift test          # ウェブ版が出した正解値と突き合わせる
 
 ## 入っているもの
 
-### アプリ（`App/`）
+### アプリ（`App/`）— UIKit
 
-| | |
-|---|---|
-| `SozoroApp` | 入口。起動時に位置情報を頼む |
-| `LocationService` | CLLocationManager の薄い包み。真北が取れないときは nil にして文字盤を北固定にする |
-| `ContentView` | MapKit の地図に基準地点の混み具合を色で出し、下のシートで歩き方を決める |
-| `WalkModel` | 状態をひとつに集めたもの。ウェブ版で散らばっていた分 |
-| `PickView` | 三択。ぼかした色と伏せた一行と距離だけ |
-| `CompassView` | 針は片側だけ。文字は回さず立てる。北をまたいでも逆回りしない |
-| `ArrivalView` | 到着。ここで初めて正体を出し、続けるか終えるかを聞く |
+| | | プレビュー |
+|---|---|---|
+| `Theme` | ウェブ版の色と字。墨・和紙・藍・混雑の三段 | |
+| `SozoroApp` | AppDelegate。SceneDelegate は使わない | |
+| `LocationService` | CLLocationManager の薄い包み。真北が取れないときは nil にして文字盤を北固定にする | |
+| `MapViewController` | MapKit の地図に基準地点の混み具合を色で置き、下のシートで歩き方を決める | ● |
+| `SheetView` | 気分のチップと歩き方の行。選択は墨で塗りつぶす | ● |
+| `WalkStore` | 状態をひとつに集めたもの。ウェブ版で散らばっていた分 | |
+| `PickViewController` | 三択。ぼかした色と伏せた一行と距離だけ | ● |
+| `CompassViewController` | CALayer で描いた文字盤。針は片側、文字は回さず立てる | ● |
+| `ArrivalViewController` | 到着。ここで初めて正体を出し、続けるか終えるかを聞く | ● |
+
+**プレビューは5枚**あります。`WalkStore.preview(stage:)` が上野に立った状態を作るので、
+実機を出さずに三択もコンパスも到着も見られます。Xcode の右上「Canvas」を出してください。
+
+ファイルを足したら `python3 tools/genproject.py` でプロジェクトを作り直します
+（Xcode は勝手には拾わないので）。
 
 ### ロジック（`Sources/SozoroCore/`）
 
