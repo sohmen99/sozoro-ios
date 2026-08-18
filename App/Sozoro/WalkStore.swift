@@ -18,6 +18,9 @@ final class WalkStore {
     var course: Route.Course?
     var stops: [Spot] = []
     var note: String?
+    var startedAt: Date?
+    /// いま何時として扱うか。デモではここを差し替える。
+    var clock: () -> Date = { Date() }
 
     let draw = Draw()
     let route = Route()
@@ -29,7 +32,7 @@ final class WalkStore {
 
     /// 地図に出す基準地点。ウェブ版のヒートマップにあたる。
     lazy var landmarks: [Spot] = Array(data.spots.prefix(70))
-    func crowdLevel(_ s: Spot) -> Int { crowd.level(s, at: Date()) }
+    func crowdLevel(_ s: Spot) -> Int { crowd.level(s, at: clock()) }
 
     var remaining: Double? {
         guard let h = here, let d = destination else { return nil }
@@ -65,7 +68,7 @@ final class WalkStore {
     }
 
     func dealThree(from h: Coordinate) {
-        var ctx = Draw.Context(origin: h, kinds: kinds, now: Date())
+        var ctx = Draw.Context(origin: h, kinds: kinds, now: clock())
         stops.forEach { ctx.visited.insert($0.id) }
         var rng = SystemRandomNumberGenerator()
         let r = draw.pickMany(draw.candidates(ctx), ctx, using: &rng)
@@ -80,7 +83,7 @@ final class WalkStore {
     }
 
     func choose(_ s: Spot) {
-        destination = s; origin = here; stage = .walking; changed()
+        destination = s; origin = here; startedAt = Date(); stage = .walking; changed()
     }
 
     func startCourse(from h: Coordinate) {
@@ -89,7 +92,7 @@ final class WalkStore {
             note = "No station within walking range from here."; changed(); return
         }
         let c = route.build(from: h, to: pick)
-        course = c; destination = c.stops.first; origin = h
+        course = c; destination = c.stops.first; origin = h; startedAt = Date()
         stage = .walking; changed()
     }
 
@@ -101,7 +104,7 @@ final class WalkStore {
     func next() {
         if var c = course, c.remaining > 0 {
             c.index += 1; course = c
-            destination = c.stops[c.index]; origin = here
+            destination = c.stops[c.index]; origin = here; startedAt = Date()
             stage = .walking; changed(); return
         }
         course = nil

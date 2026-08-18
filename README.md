@@ -26,23 +26,46 @@ swift test          # ウェブ版が出した正解値と突き合わせる
 
 ### アプリ（`App/`）— UIKit
 
-| | | プレビュー |
-|---|---|---|
-| `Theme` | ウェブ版の色と字。墨・和紙・藍・混雑の三段 | |
-| `SozoroApp` | AppDelegate。SceneDelegate は使わない | |
-| `LocationService` | CLLocationManager の薄い包み。真北が取れないときは nil にして文字盤を北固定にする | |
-| `MapViewController` | MapKit の地図に基準地点の混み具合を色で置き、下のシートで歩き方を決める | ● |
-| `SheetView` | 気分のチップと歩き方の行。選択は墨で塗りつぶす | ● |
-| `WalkStore` | 状態をひとつに集めたもの。ウェブ版で散らばっていた分 | |
-| `PickViewController` | 三択。ぼかした色と伏せた一行と距離だけ | ● |
-| `CompassViewController` | CALayer で描いた文字盤。針は片側、文字は回さず立てる | ● |
-| `ArrivalViewController` | 到着。ここで初めて正体を出し、続けるか終えるかを聞く | ● |
+| | |
+|---|---|
+| `Theme` | ウェブ版の色と字。墨・和紙・藍・混雑の三段 |
+| `SozoroApp` | AppDelegate。窓に `RootViewController` を差すだけ |
+| `RootViewController` | **画面をひとつ持って差し替える。遷移はここに集約**。表紙→地図→三択→コンパス→到着→印 |
+| `CoverViewController` | 表紙。約束だけ示して、抽選の仕組みは明かさない |
+| `MapViewController` | 地図に混み具合を色で置く。上のバーから表紙・印・デモへ |
+| `SheetView` | 気分のチップと歩き方の行。選択は墨で塗りつぶす |
+| `PickViewController` | 三択。ぼかした色と伏せた一行と距離だけ |
+| `CompassViewController` | CALayer の文字盤。針は片側、文字は回さず立てる |
+| `ArrivalViewController` | 到着。正体を出して、続けるか終えるかを聞く |
+| `RewardsViewController` | 印15種と歩いた記録 |
+| `DemoMode` / `DemoPanel` | 場所と時刻を置いて外に出ずに通す。地図を叩くとそこに立つ |
+| `LocationService` | CLLocationManager の薄い包み。真北が取れないときは nil |
+| `WalkStore` | 状態をひとつに集めたもの |
 
-**プレビューは5枚**あります。`WalkStore.preview(stage:)` が上野に立った状態を作るので、
-実機を出さずに三択もコンパスも到着も見られます。Xcode の右上「Canvas」を出してください。
+### プレビュー
 
-ファイルを足したら `python3 tools/genproject.py` でプロジェクトを作り直します
-（Xcode は勝手には拾わないので）。
+`RootViewController.swift` の末尾に**6枚**あります。Canvas（⌥⌘↩）を出すと、
+表紙・地図・三択・コンパス・到着・印がそれぞれ出ます。
+
+```swift
+#Preview("3 Picks") { RootViewController(store: .preview(stage: .picking), start: .picks) }
+```
+
+`WalkStore.preview(stage:)` が上野に立った状態を作るので、**位置情報も実機も要りません。**
+プレビューでは `LocationService` を起こさないので、許可も出ません。
+
+### デモモード
+
+地図の右上の杖のボタンで入ります。ウェブ版の `?demo=1` と同じで、
+
+- **時刻のつまみ** … 混雑推定も営業時間もこの時刻に従う
+- **平日 / 休日** … 人流の休日昼・平日昼が入れ替わる
+- **地図を叩く** … その場所に立つ
+- **×1 / ×10 / ×60** … コンパス画面から自動で歩く。×60 なら15分が15秒
+
+**シミュレータでは実測が取れないので、こちらが本番の確認手段になります。**
+自動歩行は直線を進むぶん道のりの1.3倍だけ遅く進めてあるので、
+「徒歩15分」と出したら本当に15分（×60なら15秒）かかります。
 
 ### ロジック（`Sources/SozoroCore/`）
 
@@ -107,10 +130,9 @@ Resources/names.json           読みが分かっている分の英語名
 
 ## まだ無いもの
 
-- **記録と印**（ウェブ版の15種）。`WalkStore` を書けば載る
 - **共有**（`UIActivityViewController` に画像を渡すだけ）
-- **表紙**と**印のギャラリー**
-- **デモモード**（場所と時刻を置いて確かめるやつ）
+- **ヒント2回**（コンパス画面で段階的に開示するやつ）
+- シートを指で引き出す動き。いまは出しっぱなし
 - 読みが分かっていない128件の日本語名。[sozoro-romaji](https://github.com/sohmen99/sozoro-romaji) が埋まったら差し込む
 
 地図は MapKit なので、ウェブ版のベースマップ（SVG 71KB）と投影のコードと生成

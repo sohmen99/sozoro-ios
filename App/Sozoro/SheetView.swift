@@ -166,17 +166,3 @@ final class ModeRow: UIButton {
         alpha = on ? 1 : 0.66
     }
 }
-
-#Preview("Sheet") {
-    let v = SheetView(store: .preview())
-    let host = UIViewController()
-    host.view.backgroundColor = Theme.washi2
-    v.translatesAutoresizingMaskIntoConstraints = false
-    host.view.addSubview(v)
-    NSLayoutConstraint.activate([
-        v.leadingAnchor.constraint(equalTo: host.view.leadingAnchor, constant: 10),
-        v.trailingAnchor.constraint(equalTo: host.view.trailingAnchor, constant: -10),
-        v.bottomAnchor.constraint(equalTo: host.view.bottomAnchor, constant: -10)
-    ])
-    return host
-}

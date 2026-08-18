@@ -117,6 +117,7 @@ final class ArrivalViewController: UIViewController {
     private let store: WalkStore
     var onKeep: (() -> Void)?
     var onStop: (() -> Void)?
+    var onRewards: (() -> Void)?
 
     init(store: WalkStore) { self.store = store; super.init(nibName: nil, bundle: nil) }
     required init?(coder: NSCoder) { fatalError() }
@@ -158,7 +159,13 @@ final class ArrivalViewController: UIViewController {
         card.layer.cornerRadius = 14
         card.layer.cornerCurve = .continuous
 
-        let col = stack(.vertical, 18, [stack(.vertical, 4, [eyebrow, head]), card, keep, stop])
+        let marks = UIButton(type: .system)
+        marks.setTitle("Marks you have", for: .normal)
+        marks.titleLabel?.font = Theme.body(13)
+        marks.tintColor = Theme.aiLight
+        marks.addAction(UIAction { [weak self] _ in self?.onRewards?() }, for: .touchUpInside)
+
+        let col = stack(.vertical, 18, [stack(.vertical, 4, [eyebrow, head]), card, keep, marks, stop])
         view.addSubview(col)
         col.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -175,5 +182,3 @@ final class ArrivalViewController: UIViewController {
     }
 }
 
-#Preview("Three picks") { PickViewController(store: .preview(stage: .picking)) }
-#Preview("Arrival")     { ArrivalViewController(store: .preview(stage: .arrived)) }

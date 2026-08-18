@@ -102,6 +102,8 @@ final class CompassViewController: UIViewController {
 
     var onArrive: (() -> Void)?
     var onGiveUp: (() -> Void)?
+    /// デモのときだけ出す。行き先へ自動で歩く。
+    var demoWalk: (() -> Void)?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -129,9 +131,17 @@ final class CompassViewController: UIViewController {
         ])
         metrics.distribution = .fillEqually
 
-        let col = stack(.vertical, 20, [
-            stack(.vertical, 5, [head, sub]), dial, metrics, arriveButton, giveUp
-        ])
+        var rows: [UIView] = [stack(.vertical, 5, [head, sub]), dial, metrics, arriveButton]
+        if demoWalk != nil {
+            let w = UIButton(type: .system)
+            w.setTitle("Walk to it (demo)", for: .normal)
+            w.titleLabel?.font = Theme.body(13, .semibold)
+            w.tintColor = Theme.mid
+            w.addAction(UIAction { [weak self] _ in self?.demoWalk?() }, for: .touchUpInside)
+            rows.append(w)
+        }
+        rows.append(giveUp)
+        let col = stack(.vertical, 20, rows)
         view.addSubview(col)
         col.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -178,6 +188,3 @@ final class CompassViewController: UIViewController {
     }
 }
 
-#Preview("Compass") {
-    CompassViewController(store: .preview(stage: .walking))
-}

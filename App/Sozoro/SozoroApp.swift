@@ -7,7 +7,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ app: UIApplication,
                      didFinishLaunchingWithOptions o: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         let w = UIWindow(frame: UIScreen.main.bounds)
-        w.rootViewController = MapViewController()
+        w.rootViewController = RootViewController()
         w.overrideUserInterfaceStyle = .light
         w.makeKeyAndVisible()
         window = w

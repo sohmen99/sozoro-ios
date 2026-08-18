@@ -7,17 +7,20 @@ import SozoroCore
 @MainActor
 final class MapViewController: UIViewController {
     let store: WalkStore
-    private lazy var location = LocationService()
+    let demo: DemoMode
+    var onBegin: (() -> Void)?
+    var onCover: (() -> Void)?
+    var onRewards: (() -> Void)?
+    var onDemoToggle: ((Bool) -> Void)?
 
     private let map = MKMapView()
     private lazy var sheet = SheetView(store: store)
-    private var child: UIViewController?
+    private lazy var panel = DemoPanel(demo: demo, store: store)
 
-    init(store: WalkStore) {
-        self.store = store
+    init(store: WalkStore, demo: DemoMode) {
+        self.store = store; self.demo = demo
         super.init(nibName: nil, bundle: nil)
     }
-    convenience init() { self.init(store: WalkStore()) }
     required init?(coder: NSCoder) { fatalError() }
 
     override func viewDidLoad() {
@@ -26,16 +29,23 @@ final class MapViewController: UIViewController {
 
         map.mapType = .mutedStandard
         map.pointOfInterestFilter = .excludingAll
-        map.showsUserLocation = true
+        map.showsUserLocation = !demo.on
         map.region = MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 35.7138, longitude: 139.7772),
+            center: CLLocationCoordinate2D(latitude: store.here?.lat ?? 35.7138,
+                                           longitude: store.here?.lon ?? 139.7772),
             span: MKCoordinateSpan(latitudeDelta: 0.032, longitudeDelta: 0.032))
         map.delegate = self
         view.addSubview(map)
         map.pin(to: view)
-        dropCrowdPins()
+        map.addAnnotations(store.landmarks.map { CrowdPin(spot: $0, crowd: store.crowdLevel($0)) })
+        if demo.on {
+            // デモでは地図を叩いた場所に立つ。実測は起こさない。
+            let tap = UITapGestureRecognizer(target: self, action: #selector(tapped(_:)))
+            map.addGestureRecognizer(tap)
+        }
+        addMeMarker()
 
-        sheet.onBegin = { [weak self] in self?.store.begin() }
+        sheet.onBegin = { [weak self] in self?.onBegin?() }
         view.addSubview(sheet)
         sheet.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -44,66 +54,70 @@ final class MapViewController: UIViewController {
             sheet.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 22)
         ])
 
-        store.onChange = { [weak self] in self?.render() }
-        location.onUpdate = { [weak self] c, h in
-            guard let self else { return }
-            self.store.here = c
-            self.store.heading = h
-            if let c, self.store.stage == .planning {
-                self.map.setCenter(CLLocationCoordinate2D(latitude: c.lat, longitude: c.lon),
-                                   animated: true)
+        let bar = stack(.horizontal, 8, [
+            roundButton("chevron.left") { [weak self] in self?.onCover?() },
+            UIView(),
+            roundButton("seal") { [weak self] in self?.onRewards?() },
+            roundButton(demo.on ? "wand.and.stars.inverse" : "wand.and.stars") { [weak self] in
+                guard let self else { return }
+                self.onDemoToggle?(!self.demo.on)
             }
-            self.sheet.refresh()
-            (self.child as? CompassViewController)?.refresh()
+        ], align: .center)
+        view.addSubview(bar)
+        bar.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            bar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
+            bar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 14),
+            bar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -14)
+        ])
+
+        if demo.on {
+            panel.onChange = { [weak self] in self?.locationMoved() }
+            view.addSubview(panel)
+            panel.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                panel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 14),
+                panel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -14),
+                panel.topAnchor.constraint(equalTo: bar.bottomAnchor, constant: 10)
+            ])
         }
-        location.start()
-    }
-
-    /// 基準地点の混み具合を色の点で置く。ウェブ版のヒートマップにあたる。
-    private func dropCrowdPins() {
-        map.addAnnotations(store.landmarks.map { s in
-            let a = CrowdPin(spot: s, crowd: store.crowdLevel(s))
-            return a
-        })
-    }
-
-    private func render() {
-        child?.willMove(toParent: nil)
-        child?.view.removeFromSuperview()
-        child?.removeFromParent()
-        child = nil
-        sheet.isHidden = store.stage != .planning
         sheet.refresh()
+    }
 
-        let vc: UIViewController?
-        switch store.stage {
-        case .planning: vc = nil
-        case .picking:
-            let p = PickViewController(store: store)
-            p.onChoose = { [weak self] s in self?.store.choose(s) }
-            p.onRedraw = { [weak self] in
-                guard let h = self?.store.here else { return }
-                self?.store.dealThree(from: h)
-            }
-            p.onCancel = { [weak self] in self?.store.reset() }
-            vc = p
-        case .walking:
-            let c = CompassViewController(store: store)
-            c.onArrive = { [weak self] in self?.store.arrive() }
-            c.onGiveUp = { [weak self] in self?.store.reset() }
-            vc = c
-        case .arrived:
-            let a = ArrivalViewController(store: store)
-            a.onKeep = { [weak self] in self?.store.next() }
-            a.onStop = { [weak self] in self?.store.reset() }
-            vc = a
-        }
-        guard let vc else { return }
-        addChild(vc)
-        view.addSubview(vc.view)
-        vc.view.pin(to: view)
-        vc.didMove(toParent: self)
-        child = vc
+    private var meMarker: MKPointAnnotation?
+    private func addMeMarker() {
+        guard demo.on, let h = store.here else { return }
+        let a = MKPointAnnotation()
+        a.coordinate = CLLocationCoordinate2D(latitude: h.lat, longitude: h.lon)
+        map.addAnnotation(a)
+        meMarker = a
+    }
+
+    @objc private func tapped(_ g: UITapGestureRecognizer) {
+        let p = g.location(in: map)
+        let c = map.convert(p, toCoordinateFrom: map)
+        store.here = Coordinate(lat: c.latitude, lon: c.longitude)
+        meMarker.map { map.removeAnnotation($0) }
+        addMeMarker()
+        sheet.refresh()
+    }
+
+    func locationMoved() {
+        sheet.refresh()
+        if demo.on { meMarker.map { map.removeAnnotation($0) }; addMeMarker() }
+    }
+
+    private func roundButton(_ symbol: String, _ act: @escaping () -> Void) -> UIButton {
+        let b = UIButton(type: .system)
+        var c = UIButton.Configuration.filled()
+        c.image = UIImage(systemName: symbol)
+        c.baseBackgroundColor = Theme.washi.withAlphaComponent(0.92)
+        c.baseForegroundColor = Theme.ink
+        c.cornerStyle = .capsule
+        c.contentInsets = .init(top: 10, leading: 12, bottom: 10, trailing: 12)
+        b.configuration = c
+        b.addAction(UIAction { _ in act() }, for: .touchUpInside)
+        return b
     }
 }
 
@@ -136,4 +150,3 @@ extension MapViewController: MKMapViewDelegate {
     }
 }
 
-#Preview("Map and sheet") { MapViewController(store: .preview()) }

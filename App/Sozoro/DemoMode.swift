@@ -1,0 +1,127 @@
+import UIKit
+import SozoroCore
+
+/// 確認用。場所と時刻を自由に置いて、外に出ずに通しで見られる。
+/// ウェブ版の ?demo=1 と同じ役目。シミュレータでは実測が取れないので、こちらが本番になる。
+@MainActor
+final class DemoMode {
+    var on = false
+    /// 0〜23.5。混雑推定も営業時間もこの時刻に従う。
+    var hour: Double = 14
+    var weekend = true
+    /// 自動歩行の倍率。×60 なら15分が15秒。
+    var speed: Double = 60
+    private var timer: Timer?
+
+    var now: Date {
+        var c = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        c.hour = Int(hour); c.minute = Int((hour - floor(hour)) * 60)
+        let base = Calendar.current.date(from: c) ?? Date()
+        // 曜日を指定の側へ寄せる。人流の休日昼／平日昼が入れ替わる。
+        let wd = Calendar.current.component(.weekday, from: base)
+        let isWeekend = (wd == 1 || wd == 7)
+        guard isWeekend != weekend else { return base }
+        return Calendar.current.date(byAdding: .day, value: weekend ? (7 - wd + 1) : 2, to: base) ?? base
+    }
+
+    /// 行き先へ向かって自動で歩く。直線を進むので、道のりぶん遅く進める。
+    /// そうしないと「徒歩45分」と出したのに35分で着いてしまう。
+    func walk(store: WalkStore, tick: @escaping () -> Void) {
+        stop()
+        guard store.destination != nil else { return }
+        timer = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, let here = store.here, let d = store.destination else { return }
+                let step = (store.draw.config.walkSpeed / store.draw.config.detour)
+                         * self.speed * (0.25 / 60)
+                let left = Geo.distance(here, d.coordinate)
+                let brg = Geo.bearing(here, d.coordinate)
+                store.heading = brg                      // 針が進行方向を向く
+                store.here = Geo.move(from: here, bearing: brg, metres: min(step, left))
+                tick()
+                if left <= step { self.stop(); tick() }
+            }
+        }
+    }
+    func stop() { timer?.invalidate(); timer = nil }
+}
+
+/// デモの操作盤。地図の上に薄く置く。
+final class DemoPanel: UIView {
+    private let demo: DemoMode
+    private let store: WalkStore
+    private let hourLabel = makeLabel("14:00", Theme.mono(13, .semibold), .white)
+    private let slider = UISlider()
+    private let daySeg = UISegmentedControl(items: ["Weekday", "Weekend"])
+    private let speedSeg = UISegmentedControl(items: ["×1", "×10", "×60"])
+    private let walkButton = UIButton(type: .system)
+    var onChange: (() -> Void)?
+
+    init(demo: DemoMode, store: WalkStore) {
+        self.demo = demo; self.store = store
+        super.init(frame: .zero)
+        backgroundColor = Theme.sumi.withAlphaComponent(0.92)
+        layer.cornerRadius = 14
+        layer.cornerCurve = .continuous
+        layer.borderWidth = 1
+        layer.borderColor = Theme.mid.withAlphaComponent(0.55).cgColor
+        build()
+    }
+    required init?(coder: NSCoder) { fatalError() }
+
+    private func build() {
+        let head = UILabel()
+        head.attributedText = Theme.label("Demo — place and time are yours")
+
+        slider.minimumValue = 0; slider.maximumValue = 23.5; slider.value = 14
+        slider.minimumTrackTintColor = Theme.mid
+        slider.addAction(UIAction { [weak self] _ in
+            guard let self else { return }
+            self.demo.hour = (Double(self.slider.value) * 2).rounded() / 2
+            self.sync(); self.onChange?()
+        }, for: .valueChanged)
+
+        daySeg.selectedSegmentIndex = 1
+        daySeg.selectedSegmentTintColor = Theme.mid
+        daySeg.addAction(UIAction { [weak self] _ in
+            guard let self else { return }
+            self.demo.weekend = self.daySeg.selectedSegmentIndex == 1
+            self.onChange?()
+        }, for: .valueChanged)
+
+        speedSeg.selectedSegmentIndex = 2
+        speedSeg.selectedSegmentTintColor = Theme.mid
+        speedSeg.addAction(UIAction { [weak self] _ in
+            guard let self else { return }
+            self.demo.speed = [1.0, 10, 60][self.speedSeg.selectedSegmentIndex]
+        }, for: .valueChanged)
+
+        var c = UIButton.Configuration.plain()
+        c.attributedTitle = AttributedString("Walk to it", attributes:
+            AttributeContainer([.font: Theme.body(13, .semibold)]))
+        c.baseForegroundColor = Theme.mid
+        c.background.strokeColor = Theme.mid.withAlphaComponent(0.6)
+        c.background.strokeWidth = 1
+        c.background.cornerRadius = 9
+        c.contentInsets = .init(top: 9, leading: 12, bottom: 9, trailing: 12)
+        walkButton.configuration = c
+        walkButton.addAction(UIAction { [weak self] _ in
+            guard let self else { return }
+            self.demo.walk(store: self.store) { self.onChange?() }
+        }, for: .touchUpInside)
+
+        let hint = makeLabel("Tap the map to stand there.", Theme.body(10.5), Theme.mutedDark)
+        let col = stack(.vertical, 9, [
+            stack(.horizontal, 10, [head, UIView(), hourLabel], align: .center),
+            slider, daySeg, speedSeg, walkButton, hint
+        ])
+        addSubview(col)
+        col.pin(to: self, insets: .init(top: 12, left: 13, bottom: 12, right: 13))
+        sync()
+    }
+
+    func sync() {
+        let h = Int(demo.hour), m = Int((demo.hour - floor(demo.hour)) * 60)
+        hourLabel.text = String(format: "%02d:%02d", h, m)
+    }
+}

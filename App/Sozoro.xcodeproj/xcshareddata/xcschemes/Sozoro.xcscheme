@@ -5,7 +5,7 @@
          <BuildActionEntry buildForTesting = "YES" buildForRunning = "YES" buildForProfiling = "YES" buildForArchiving = "YES" buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "E9330F69094C4BE1995A08D6"
+               BlueprintIdentifier = "FB182D90C989452197399DB9"
                BuildableName = "Sozoro.app"
                BlueprintName = "Sozoro"
                ReferencedContainer = "container:Sozoro.xcodeproj">
@@ -20,7 +20,7 @@
       <BuildableProductRunnable runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E9330F69094C4BE1995A08D6"
+            BlueprintIdentifier = "FB182D90C989452197399DB9"
             BuildableName = "Sozoro.app"
             BlueprintName = "Sozoro"
             ReferencedContainer = "container:Sozoro.xcodeproj">
@@ -31,7 +31,7 @@
       <BuildableProductRunnable runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "E9330F69094C4BE1995A08D6"
+            BlueprintIdentifier = "FB182D90C989452197399DB9"
             BuildableName = "Sozoro.app"
             BlueprintName = "Sozoro"
             ReferencedContainer = "container:Sozoro.xcodeproj">
