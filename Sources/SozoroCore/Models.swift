@@ -1,20 +1,13 @@
 import Foundation
 
 public enum Kind: String, Codable, Sendable, CaseIterable {
-    case food, culture, green
+    // 行き先は185件の中だけ。公園・庭園は母集団に無いので気分にも置かない。
+    case food, culture
 
     public var labelEN: String {
-        switch self {
-        case .food:    return "Place to eat"
-        case .culture: return "Shrine, temple or landmark"
-        case .green:   return "Park or garden"
-        }
+        self == .food ? "Place to eat" : "Shrine, temple or landmark"
     }
-    public var labelJA: String {
-        switch self {
-        case .food: return "飲食店"; case .culture: return "文化財"; case .green: return "公園・庭園"
-        }
-    }
+    public var labelJA: String { self == .food ? "飲食店" : "文化財" }
     /// 開いている時間。寺社と公園は門の外からでも成立するので、時間を持たない。
     public var openHours: (Int, Int)? { self == .food ? (8, 22) : nil }
     /// その時刻に行き先として成立するか。
@@ -24,12 +17,8 @@ public enum Kind: String, Codable, Sendable, CaseIterable {
         return h.0 <= h.1 ? (hour >= h.0 && hour < h.1) : (hour >= h.0 || hour < h.1)
     }
 
-    /// 集客力の見立て。混雑推定の層2。ウェブ版の LAYERS と同じ値。
-    public var pop: Double {
-        switch self {
-        case .food: return 0.24; case .culture: return 0.32; case .green: return 0.25
-        }
-    }
+    /// 集客力の見立て。混雑推定の層2。手で置いた値が無いときだけ使う。
+    public var pop: Double { self == .food ? 0.24 : 0.32 }
 }
 
 public struct Spot: Identifiable, Equatable, Codable, Sendable {
@@ -40,11 +29,24 @@ public struct Spot: Identifiable, Equatable, Codable, Sendable {
     public let category: String
     /// 駅は帰り道なので、行き先とは別に扱う。
     public let isStation: Bool
+    /// 集客力（層2）を手で置いてあるとき。基準地点はこちらを使う。
+    /// nil なら種類ごとの見立て（Kind.pop）に落ちる。
+    public let pop: Double?
+    /// 一日のかたち（層3）の引き当て。基準地点は種類が行き先と違うので、
+    /// "green" や "shops" を直接渡せるようにしておく。nil なら種類のまま。
+    public let curveKey: String?
+
+    /// 混雑推定に使う集客力。
+    public var popValue: Double { pop ?? kind.pop }
+    /// 混雑推定に使う一日のかたちの名前。
+    public var curveName: String { curveKey ?? kind.rawValue }
 
     public init(id: String, name: String, coordinate: Coordinate,
-                kind: Kind, category: String, isStation: Bool = false) {
+                kind: Kind, category: String, isStation: Bool = false,
+                pop: Double? = nil, curveKey: String? = nil) {
         self.id = id; self.name = name; self.coordinate = coordinate
         self.kind = kind; self.category = category; self.isStation = isStation
+        self.pop = pop; self.curveKey = curveKey
     }
 }
 

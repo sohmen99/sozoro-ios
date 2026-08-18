@@ -100,7 +100,6 @@ final class PickCard: UIControl {
         switch spot.kind {
         case .food:    hue = 0.02 + 0.11 * t; sat = 0.42 + 0.16 * t
         case .culture: hue = 0.52 + 0.18 * t; sat = 0.26 + 0.16 * t
-        case .green:   hue = 0.24 + 0.12 * t; sat = 0.30 + 0.18 * t
         }
         let bri: CGFloat = 0.34 + 0.20 * CGFloat(abs(h / 7) % 100) / 100
         return UIColor(hue: hue, saturation: sat, brightness: bri, alpha: 1)

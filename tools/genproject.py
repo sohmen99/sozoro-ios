@@ -9,7 +9,7 @@ SRC = sorted(os.path.basename(p) for p in glob.glob('App/Sozoro/*.swift'))
 print('ソース', len(SRC), '本:', ', '.join(SRC))
 
 def oid(): return uuid.uuid4().hex[:24].upper()
-K = ['rootObj','mainGroup','productsGroup','appGroup','assetsRef','productRef','target',
+K = ['rootObj','mainGroup','productsGroup','appGroup','assetsRef','privacyRef','privacyBF','productRef','target',
      'buildConfigList','projConfigList','debugProj','releaseProj','debugTgt','releaseTgt',
      'sourcesPhase','resourcesPhase','frameworksPhase','pkgRef','pkgDep','pkgBuildFile','assetsBF']
 I = {k: oid() for k in K}
@@ -30,8 +30,9 @@ SETTINGS = '''				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_CFBundleDisplayName = Sozoro;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				LD_RUNPATH_SEARCH_PATHS = ( "$(inherited)", "@executable_path/Frameworks" );
-				MARKETING_VERSION = 0.1;
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "dev.sozoro.app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -48,12 +49,14 @@ pbx = f'''// !$*UTF8*$!
 /* Begin PBXBuildFile section */
 {buildFiles}
 		{I['assetsBF']} /* Assets.xcassets in Resources */ = {{isa = PBXBuildFile; fileRef = {I['assetsRef']} /* Assets.xcassets */; }};
+		{I['privacyBF']} /* PrivacyInfo.xcprivacy in Resources */ = {{isa = PBXBuildFile; fileRef = {I['privacyRef']} /* PrivacyInfo.xcprivacy */; }};
 		{I['pkgBuildFile']} /* SozoroCore in Frameworks */ = {{isa = PBXBuildFile; productRef = {I['pkgDep']} /* SozoroCore */; }};
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 {fileRefs}
 		{I['assetsRef']} /* Assets.xcassets */ = {{isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; }};
+		{I['privacyRef']} /* PrivacyInfo.xcprivacy */ = {{isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; }};
 		{I['productRef']} /* Sozoro.app */ = {{isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sozoro.app; sourceTree = BUILT_PRODUCTS_DIR; }};
 /* End PBXFileReference section */
 
@@ -76,6 +79,7 @@ pbx = f'''// !$*UTF8*$!
 			children = (
 {children}
 				{I['assetsRef']} /* Assets.xcassets */,
+				{I['privacyRef']} /* PrivacyInfo.xcprivacy */,
 			);
 			path = Sozoro; sourceTree = "<group>";
 		}};
@@ -117,7 +121,7 @@ pbx = f'''// !$*UTF8*$!
 /* Begin PBXResourcesBuildPhase section */
 		{I['resourcesPhase']} = {{
 			isa = PBXResourcesBuildPhase; buildActionMask = 2147483647;
-			files = ( {I['assetsBF']} /* Assets.xcassets in Resources */, );
+			files = ( {I['assetsBF']} /* Assets.xcassets in Resources */, {I['privacyBF']} /* PrivacyInfo.xcprivacy in Resources */, );
 			runOnlyForDeploymentPostprocessing = 0;
 		}};
 /* End PBXResourcesBuildPhase section */

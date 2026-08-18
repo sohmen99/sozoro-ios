@@ -29,9 +29,9 @@ final class CoverViewController: UIViewController {
         mark.attributedText = NSAttributedString(string: "TOKYO SOZORO", attributes: [
             .font: Theme.mono(12, .semibold), .kern: 3.4, .foregroundColor: Theme.aiLight])
 
-        // 言語の切り替え。英語が主で、日本語はここで選ぶ。
-        let langSwitch = LangSwitch(current: store.lang)
-        langSwitch.onPick = { [weak self] l in self?.onLang?(l) }
+        // 言語の切り替えボタンは出さない。審査に出すのは英語1本。
+        // 文言は WalkStore.t(en, ja) に両方入れたままなので、
+        // LangSwitch を top に戻せばそのまま日本語に切り替わる。
 
         let head = makeLabel(ja ? "終わりに わかる" : "You find out at the end",
                              Theme.display(ja ? 30 : 34), .white, lines: 0)
@@ -61,7 +61,7 @@ final class CoverViewController: UIViewController {
         start.configuration = c
         start.addAction(UIAction { [weak self] _ in self?.onStart?() }, for: .touchUpInside)
 
-        let top = stack(.horizontal, 10, [mark, UIView(), langSwitch], align: .center)
+        let top = stack(.horizontal, 10, [mark, UIView()], align: .center)
         let col = stack(.vertical, 22, [top, stack(.vertical, 12, [head, body]), facts, start])
         view.addSubview(col)
         col.translatesAutoresizingMaskIntoConstraints = false

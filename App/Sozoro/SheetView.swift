@@ -18,7 +18,6 @@ final class SheetView: UIView {
     // ウェブ版の CATEGORIES と同じ3つ。3つ並ぶので見出しは短くする。
     private let foodChip: ChipButton
     private let cultChip: ChipButton
-    private let greenChip: ChipButton
     private let wanderRow: ModeRow
     private let crossRow: ModeRow
     private let beginButton = UIButton(type: .system)
@@ -30,7 +29,6 @@ final class SheetView: UIView {
         self.foot = MapFoot(lang: store.lang)
         foodChip  = ChipButton(title: store.t("Food", "たべもの"),  symbol: "fork.knife")
         cultChip  = ChipButton(title: store.t("Culture", "寺社"),   symbol: "building.columns")
-        greenChip = ChipButton(title: store.t("Green", "みどり"),   symbol: "leaf")
         wanderRow = ModeRow(title: store.t("Wander", "あてもなく"), symbol: "die.face.5",
             note: store.t("One stop at a time, about 15 minutes each. Stop whenever you like.",
                           "15分ずつ、一か所ずつ。いつでもやめられます。"))
@@ -137,11 +135,10 @@ final class SheetView: UIView {
 
         let lookLabel = UILabel()
         lookLabel.attributedText = Theme.label(store.t("Looking for", "さがすもの"))
-        let chips = stack(.horizontal, 6, [foodChip, cultChip, greenChip])
+        let chips = stack(.horizontal, 8, [foodChip, cultChip])
         chips.distribution = .fillEqually
         foodChip.addAction(UIAction  { [weak self] _ in self?.store.toggle(.food) },    for: .touchUpInside)
         cultChip.addAction(UIAction  { [weak self] _ in self?.store.toggle(.culture) }, for: .touchUpInside)
-        greenChip.addAction(UIAction { [weak self] _ in self?.store.toggle(.green) },   for: .touchUpInside)
 
         let modeLabel = UILabel()
         modeLabel.attributedText = Theme.label(store.t("How you walk", "歩き方"))
@@ -181,7 +178,7 @@ final class SheetView: UIView {
     func refresh() {
         // 閉まっている時間帯は押せなくする。黙って抽選から外すのがいちばん悪い。
         let hour = store.clock()
-        for (chip, kind) in [(foodChip, Kind.food), (cultChip, .culture), (greenChip, .green)] {
+        for (chip, kind) in [(foodChip, Kind.food), (cultChip, .culture)] {
             let open = kind.isOpen(at: hour)
             chip.isEnabled = open
             chip.alpha = open ? 1 : 0.38
@@ -189,7 +186,6 @@ final class SheetView: UIView {
         }
         foodChip.on  = store.kinds.contains(.food)
         cultChip.on  = store.kinds.contains(.culture)
-        greenChip.on = store.kinds.contains(.green)
         wanderRow.on = store.mode == .wander
         crossRow.on = store.mode == .crossTown
 
@@ -221,7 +217,6 @@ final class SheetView: UIView {
         peekSummary.text = [
             store.kinds.contains(.food) ? store.t("Food", "たべもの") : nil,
             store.kinds.contains(.culture) ? store.t("Culture", "寺社") : nil,
-            store.kinds.contains(.green) ? store.t("Green", "みどり") : nil
         ].compactMap { $0 }.joined(separator: " · ")
             + " / " + (store.mode == .wander ? store.t("Wander", "あてもなく")
                                              : store.t("Cross town", "向こうまで"))

@@ -18,7 +18,10 @@ public struct Landmark: Identifiable, Sendable, Codable {
     /// 混雑推定に渡すための見立て。
     public var asSpot: Spot {
         Spot(id: "lm/" + id, name: en, coordinate: coordinate,
-             kind: kind == "food" ? .food : .culture, category: kind)
+             kind: kind == "food" ? .food : .culture, category: kind,
+             // 集客力もかたちも、手で置いた値をそのまま渡す。
+             // 種類に丸めると浅草寺が 100 ではなく 51 になる。
+             pop: pop, curveKey: kind)
     }
 
     public static let all: [Landmark] = {
@@ -64,10 +67,10 @@ extension Crowd {
         let h = calendar.component(.hour, from: when)
         guard h < 22 else { return nil }
         let d = day(spot, on: when, calendar: calendar)
-        for t in (h + 1)...22 where d[t] <= 45 { return t }
+        for t in (h + 1)...22 where d[t] < 45 { return t }
         return nil
     }
 
     public enum Level: String, Sendable { case quiet, mid, busy }
-    public static func band(_ v: Int) -> Level { v <= 45 ? .quiet : (v <= 75 ? .mid : .busy) }
+    public static func band(_ v: Int) -> Level { v < 40 ? .quiet : (v < 70 ? .mid : .busy) }
 }

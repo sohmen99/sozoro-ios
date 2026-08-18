@@ -9,6 +9,7 @@ final class ParityTests: XCTestCase {
         struct Foot: Decodable { let at: [Double]; let weekend: Bool; let value: Double }
         struct Crowd: Decodable { let name: String; let value: Int }
         struct Weight: Decodable { let name: String; let value: Double }
+        struct LM: Decodable { let id: String; let hour: Int; let value: Int }
         struct Band: Decodable { let target: Double; let tol: Double; let max: Double }
         struct RouteOpt: Decodable { let dir: String; let station: String; let mins: Int; let stops: [String] }
         struct Route: Decodable { let origin: [Double]; let options: [RouteOpt] }
@@ -18,6 +19,7 @@ final class ParityTests: XCTestCase {
         let weightNight: [Weight]
         /// 母集団ぜんぶ × 4つの時刻。並び順は spots.json と同じ。
         let weightAll: [String: [Double]]
+        let landmarks: [LM]
     }
 
     static let golden: Golden = {
@@ -75,7 +77,8 @@ final class ParityTests: XCTestCase {
     func testWeight() {
         let d = Draw()
         let ctx = Draw.Context(origin: .init(lat: 35.7138, lon: 139.7772),
-                               kinds: [.food, .culture, .green], now: Self.when)
+                               kinds: [.food, .culture], now: Self.when,
+                               cores: d.crowdedCores(at: Self.when))
         let spots = SozoroData.shared.spots
         for g in Self.golden.weight {
             guard let s = spots.first(where: { $0.name == g.name }) else {
@@ -91,7 +94,8 @@ final class ParityTests: XCTestCase {
         var c = DateComponents(); c.year = 2026; c.month = 8; c.day = 18; c.hour = 2
         let night = Calendar.current.date(from: c)!
         let ctx = Draw.Context(origin: .init(lat: 35.7138, lon: 139.7772),
-                               kinds: [.food, .culture, .green], now: night)
+                               kinds: [.food, .culture], now: night,
+                               cores: d.crowdedCores(at: night))
         let spots = SozoroData.shared.spots
         for g in Self.golden.weightNight {
             guard let s = spots.first(where: { $0.name == g.name }) else {
@@ -130,12 +134,66 @@ final class ParityTests: XCTestCase {
             c.year = 2026; c.month = 8; c.day = 18; c.hour = Int(tag.dropFirst())!
             let when = Calendar.current.date(from: c)!
             let ctx = Draw.Context(origin: .init(lat: 35.7138, lon: 139.7772),
-                                   kinds: [.food, .culture, .green], now: when)
+                                   kinds: [.food, .culture], now: when,
+                                   cores: d.crowdedCores(at: when))
             for (i, w) in expected.enumerated() {
                 XCTAssertEqual(d.weight(spots[i], ctx), w, accuracy: 1e-12,
                                "\(tag) の \(spots[i].name)")
             }
         }
+    }
+
+    /// 基準地点21件の混雑。集客力とかたちを手で置いてあるので、行き先とは別に確かめる。
+    /// ここを種類に丸めていたせいで、浅草寺が100ではなく51になっていた。
+    func testLandmarkCrowd() {
+        let c = SozoroCore.Crowd()
+        let byID = Dictionary(uniqueKeysWithValues: Landmark.all.map { ($0.id, $0) })
+        var cal = Calendar.current
+        for g in Self.golden.landmarks {
+            guard let m = byID[g.id] else { return XCTFail("基準地点が無い: \(g.id)") }
+            var d = DateComponents(); d.year = 2026; d.month = 8; d.day = 16; d.hour = g.hour
+            let when = cal.date(from: d)!
+            XCTAssertEqual(c.level(m.asSpot, at: when), g.value, "\(m.ja) \(g.hour)時")
+        }
+        _ = cal
+    }
+
+    /// あてもなく歩くほうは、混雑エリアを一件も引かない。
+    /// 静けさの重みは確率を下げるだけなので、門が要る。
+    func testWanderNeverDrawsCrowded() {
+        let d = Draw(), c = SozoroCore.Crowd()
+        for hour in [3, 11, 14, 19] {
+            var dc = DateComponents(); dc.year = 2026; dc.month = 8; dc.day = 16; dc.hour = hour
+            let when = Calendar.current.date(from: dc)!
+            let cores = d.crowdedCores(at: when)
+            let ctx = Draw.Context(origin: .init(lat: 35.7138, lon: 139.7772),
+                                   kinds: [.food, .culture], now: when, cores: cores)
+            let pool = d.candidates(ctx)
+            var rng = SystemRandomNumberGenerator()
+            var deals = 0
+            for _ in 0..<200 {
+                let r = d.pickMany(pool, ctx, using: &rng)
+                if r.picks.count == 3 { deals += 1 }
+                for p in r.picks {
+                    XCTAssertLessThan(c.level(p, at: when), Draw.crowdedFrom, "\(hour)時 \(p.name)")
+                    for core in cores {
+                        XCTAssertGreaterThan(Geo.distance(p.coordinate, core), Draw.crowdedRadius,
+                                             "\(hour)時 \(p.name) が混雑の核の近く")
+                    }
+                }
+            }
+            XCTAssertEqual(deals, 200, "\(hour)時 三択がそろわない")
+        }
+    }
+
+    /// 駅まで抜けるコースは通り道なので、混雑エリアも通ってよい。
+    func testCrossTownMayPassCrowded() {
+        let r = Route()
+        let opts = r.options(from: .init(lat: 35.7138, lon: 139.7772))
+        XCTAssertFalse(opts.isEmpty)
+        // 道筋の寄り道は最寄りの文化財から採る。混雑では落とさない。
+        let course = r.build(from: .init(lat: 35.7138, lon: 139.7772), to: opts[0])
+        XCTAssertFalse(course.stops.isEmpty)
     }
 
     func testRouteOptions() {

@@ -11,14 +11,17 @@ public struct Crowd: Sendable {
     let mesh: [MeshCell]
     let meshLo: Double, meshHi: Double
 
-    /// 種類ごとの一日のかたち（0〜1）。0時から23時。
-    static let curves: [Kind: [Double]] = [
-        .culture: [0.02,0.01,0.01,0.01,0.02,0.05,0.12,0.22,0.38,0.62,0.84,0.96,
+    /// 一日のかたち（0〜1）。0時から23時。名前で引く。
+    /// 行き先は food / culture。基準地点はそれに green と shops（道具屋街）が加わる。
+    static let curves: [String: [Double]] = [
+        "culture": [0.02,0.01,0.01,0.01,0.02,0.05,0.12,0.22,0.38,0.62,0.84,0.96,
                    1.00,0.98,0.92,0.82,0.66,0.48,0.32,0.22,0.16,0.10,0.06,0.03],
-        .food:    [0.06,0.03,0.02,0.02,0.02,0.04,0.10,0.20,0.32,0.44,0.58,0.86,
+        "food":    [0.06,0.03,0.02,0.02,0.02,0.04,0.10,0.20,0.32,0.44,0.58,0.86,
                    1.00,0.88,0.66,0.58,0.60,0.72,0.92,0.98,0.88,0.64,0.38,0.18],
-        .green:   [0.02,0.01,0.01,0.01,0.03,0.08,0.18,0.30,0.46,0.64,0.80,0.88,
-                   0.92,1.00,0.96,0.88,0.74,0.56,0.34,0.20,0.12,0.07,0.04,0.02]
+        "green":   [0.02,0.01,0.01,0.01,0.03,0.08,0.18,0.30,0.46,0.64,0.80,0.88,
+                   0.92,1.00,0.96,0.88,0.74,0.56,0.34,0.20,0.12,0.07,0.04,0.02],
+        "shops":   [0.01,0.01,0.01,0.01,0.01,0.02,0.05,0.12,0.28,0.52,0.78,0.92,
+                   0.96,1.00,0.94,0.84,0.68,0.44,0.22,0.10,0.05,0.03,0.02,0.01]
     ]
 
     public init(mesh: [MeshCell] = SozoroData.shared.mesh) {
@@ -47,12 +50,12 @@ public struct Crowd: Sendable {
     public func level(_ spot: Spot, at when: Date, calendar: Calendar = .current) -> Int {
         let c = calendar.dateComponents([.hour, .minute, .weekday], from: when)
         let h = Double(c.hour ?? 12) + Double(c.minute ?? 0) / 60
-        let curve = Self.curves[spot.kind] ?? Self.curves[.culture]!
+        let curve = Self.curves[spot.curveName] ?? Self.curves["culture"]!
         let i = Int(h) % 24, j = (i + 1) % 24, t = h - h.rounded(.down)
         let shape = curve[i] * (1 - t) + curve[j] * t
         let isWeekend = (c.weekday == 1 || c.weekday == 7)
         let pull = pow(footfall(at: spot.coordinate, weekend: isWeekend), 1.9)
-        let base = min(100, shape * spot.kind.pop * (isWeekend ? 1.15 : 1) * 100)
+        let base = min(100, shape * spot.popValue * (isWeekend ? 1.15 : 1) * 100)
         return Int(min(100, max(0, (base + (100 - base) * pull * 0.50).rounded())))
     }
 }

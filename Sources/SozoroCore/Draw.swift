@@ -25,10 +25,31 @@ public struct Draw: Sendable {
         public var kinds: Set<Kind>
         public var visited: Set<String>
         public var now: Date
+        /// あてもなく歩くときは、混んでいる場所を **一件も引かない**。
+        /// 静けさの重みは掛け算なので、確率は下がっても 0 にはならない。
+        /// 人を混雑から逃がすのが目的である以上、ここは掛け算ではなく門にする。
+        /// 駅まで抜けるコースは通り道なので、この門は掛けない。
+        public var avoidCrowded: Bool
+        /// いま混んでいる核の座標。avoidCrowded のときだけ見る。
+        public var cores: [Coordinate]
         public init(origin: Coordinate, kinds: Set<Kind> = Set(Kind.allCases),
-                    visited: Set<String> = [], now: Date = Date()) {
-            self.origin = origin; self.kinds = kinds; self.visited = visited; self.now = now
+                    visited: Set<String> = [], now: Date = Date(),
+                    avoidCrowded: Bool = true, cores: [Coordinate] = []) {
+            self.origin = origin; self.kinds = kinds; self.visited = visited
+            self.now = now; self.avoidCrowded = avoidCrowded; self.cores = cores
         }
+    }
+
+    /// これ以上は「混んでいる」。地図の凡例の紫と同じ境。
+    public static let crowdedFrom = 70
+    /// 混んでいる核から、この距離までは「混雑エリア」とみなす。
+    /// 地図で紫ににじんでいる範囲と、だいたい同じ。
+    public static let crowdedRadius = 500.0
+
+    /// いま混んでいる核。時刻で変わる。深夜はどこも混んでいないので空になる。
+    public func crowdedCores(at when: Date) -> [Coordinate] {
+        Landmark.all.filter { crowd.level($0.asSpot, at: when) >= Self.crowdedFrom }
+            .map(\.coordinate)
     }
 
     public var target: Double { config.targetMetres(config.legMinutes) }
@@ -49,7 +70,16 @@ public struct Draw: Sendable {
         let band = exp(-off * off)
 
         // 2 · 静けさ。混んでいる所は、そもそも引かない。
-        let quiet = pow(Double(100 - crowd.level(spot, at: ctx.now)) / 100, 2.2)
+        //     あてもなく歩くときは掛け算ではなく門にする。静けさの重みは確率を
+        //     下げるだけで 0 にはしないので、人を混雑から逃がすには足りない。
+        let level = crowd.level(spot, at: ctx.now)
+        if ctx.avoidCrowded {
+            if level >= Self.crowdedFrom { return 0 }
+            for c in ctx.cores where Geo.distance(spot.coordinate, c) <= Self.crowdedRadius {
+                return 0
+            }
+        }
+        let quiet = pow(Double(100 - level) / 100, 2.2)
 
         // 3 · 外向き。人出の多い帯から少ない帯へ送り出す。実測がそのまま効く。
         let cal = Calendar.current

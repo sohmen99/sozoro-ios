@@ -30,7 +30,7 @@ final class ArrivalScene: UIView {
         // 遠景の街区。
         ctx.setFillColor(UIColor(hex: 0x2C323C).cgColor)
         var x: CGFloat = -10
-        var seed = kind == .food ? 7 : (kind == .green ? 29 : 13)
+        var seed = kind == .food ? 7 : 13
         func rnd() -> CGFloat { seed = (seed &* 1103515245 &+ 12345) & 0x7fffffff
                                 return CGFloat(seed % 1000) / 1000 }
         while x < w + 20 {
@@ -40,24 +40,7 @@ final class ArrivalScene: UIView {
         }
         // 手前。行き先の種類で建物のかたちを変える。
         ctx.setFillColor(UIColor(hex: 0x363D48).cgColor)
-        if kind == .green {
-            // 木立。公園と庭園に着いたときの手前。
-            var s2 = 91
-            func r2() -> CGFloat { s2 = (s2 &* 1103515245 &+ 12345) & 0x7fffffff
-                                   return CGFloat(s2 % 1000) / 1000 }
-            for i in 0..<7 {
-                let cx = w * (0.08 + 0.14 * CGFloat(i)) + r2() * 12
-                let top = h * (0.52 + r2() * 0.10)
-                let rad = 26 + r2() * 16
-                ctx.setFillColor(UIColor(hex: 0x3B4A3E).cgColor)
-                ctx.fillEllipse(in: CGRect(x: cx - rad, y: top, width: rad * 2, height: rad * 1.7))
-                ctx.setFillColor(UIColor(hex: 0x2E343D).cgColor)
-                ctx.fill(CGRect(x: cx - 4, y: top + rad * 1.4, width: 8, height: h))
-            }
-            // 園路。
-            ctx.setFillColor(UIColor(hex: 0x424955).cgColor)
-            ctx.fill(CGRect(x: 0, y: h * 0.86, width: w, height: h * 0.14))
-        } else if kind == .culture {
+        if kind == .culture {
             // 屋根の重なり。寺の側面。
             for i in 0..<3 {
                 let y = h * 0.70 - CGFloat(i) * 16

@@ -10,7 +10,7 @@ final class WalkStore {
 
     var stage: Stage = .planning
     var mode: Mode = .wander
-    var kinds: Set<Kind> = [.food, .culture, .green]
+    var kinds: Set<Kind> = [.food, .culture]
     var picks: [Spot] = []
     var destination: Spot?
     var origin: Coordinate?
@@ -92,7 +92,9 @@ final class WalkStore {
     }
 
     func dealThree(from h: Coordinate) {
-        var ctx = Draw.Context(origin: h, kinds: kinds, now: clock())
+        // あてもなく歩くほうだけ、混雑エリアを丸ごと外す。
+        var ctx = Draw.Context(origin: h, kinds: kinds, now: clock(),
+                               avoidCrowded: true, cores: draw.crowdedCores(at: clock()))
         stops.forEach { ctx.visited.insert($0.id) }
         var rng = SystemRandomNumberGenerator()
         let r = draw.pickMany(draw.candidates(ctx), ctx, using: &rng)
