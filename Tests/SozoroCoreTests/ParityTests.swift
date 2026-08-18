@@ -16,6 +16,8 @@ final class ParityTests: XCTestCase {
         let geo: [Geo], footfall: [Foot], crowd: [Crowd], weight: [Weight]
         let band: Band, routes: [Route]
         let weightNight: [Weight]
+        /// 母集団ぜんぶ × 4つの時刻。並び順は spots.json と同じ。
+        let weightAll: [String: [Double]]
     }
 
     static let golden: Golden = {
@@ -113,6 +115,26 @@ final class ParityTests: XCTestCase {
         // 落としたものが戻っていないか。同名の別の寺と、照合ちがいの2件。
         for bad in ["本行寺", "筆や", "長久院"] {
             XCTAssertNil(d.photos[bad], "外したはずの写真が戻っている: \(bad)")
+        }
+    }
+
+    /// 母集団170件ぜんぶを4つの時刻で突き合わせる。9地点の抜き取りでは、
+    /// 直した所だけ合っていて他がずれている、という事故を拾えない。
+    /// 同名が複数あるので（甲州屋・砂場・川しま）、名前ではなく並び順で見る。
+    func testWeightAcrossThePopulation() {
+        let d = Draw()
+        let spots = SozoroData.shared.spots
+        for (tag, expected) in Self.golden.weightAll.sorted(by: { $0.key < $1.key }) {
+            XCTAssertEqual(expected.count, spots.count, "件数が違う \(tag)")
+            var c = DateComponents()
+            c.year = 2026; c.month = 8; c.day = 18; c.hour = Int(tag.dropFirst())!
+            let when = Calendar.current.date(from: c)!
+            let ctx = Draw.Context(origin: .init(lat: 35.7138, lon: 139.7772),
+                                   kinds: [.food, .culture, .green], now: when)
+            for (i, w) in expected.enumerated() {
+                XCTAssertEqual(d.weight(spots[i], ctx), w, accuracy: 1e-12,
+                               "\(tag) の \(spots[i].name)")
+            }
         }
     }
 

@@ -6,6 +6,7 @@ const line=n=>{const i=js.indexOf("var "+n+" = ");const j=js.indexOf("\n",i);ret
 const between=(a,b)=>js.slice(js.indexOf(a), js.indexOf(b));
 const obj=n=>{const i=js.indexOf("var "+n+" = {");return js.slice(i, js.indexOf("\n};", i)+3);};
 const src=["var R_EARTH=6371000;",obj("CONFIG"),
+  between("var PHOTOS = {","var SPOTS = ["),
   line("SPOTS"),line("CULTURE"),line("STATIONS"),line("OD_MESH"),line("NAME_EN"),line("STATION_EN"),
   between("var MESH_LO = 0","var Crowd = {"),
   obj("OPEN_HOURS"),
@@ -55,6 +56,13 @@ for(const idx of [0,10,40,80,120,155,157,163,169]){
   golden.weight.push({name:s.name,value:g.Draw.weight(s,ctx)});
 }
 golden.band={target:t,tol:tol,max:ctx.max};
+// 母集団ぜんぶ × 4つの時刻。抜き取りだと、直した所だけ合っていて他がずれる事故を拾えない。
+golden.weightAll={};
+for(const h of [2,11,14,19]){
+  const w=new Date(2026,7,18,h,0,0);
+  const c={origin,target:t,tol,max:ctx.max,moods:["food","culture","green"],avoid:true,visited:new Set(),now:w};
+  golden.weightAll["h"+String(h).padStart(2,"0")]=spots.map(s=>g.Draw.weight(s,c));
+}
 // 深夜。飲食が閉まり、寺社と公園だけが残る時間帯の重み。
 const night=new Date(2026,7,18,2,0,0);
 const nctx={origin,target:t,tol,max:ctx.max,moods:["food","culture","green"],avoid:true,visited:new Set(),now:night};

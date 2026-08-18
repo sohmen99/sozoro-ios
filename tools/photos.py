@@ -93,6 +93,34 @@ def api(titles):
     return got
 
 
+WEB = os.path.expanduser("~/Documents/ハッカソン/index.html")
+
+
+def write_web(index):
+    """ウェブ版にも同じ58件を渡す。あちらは1枚のHTMLなので焼き込めない。
+    Commons の縮小版を直に見て、取れなければ分類ごとの絵に落ちる（img.onerror）。"""
+    if not os.path.exists(WEB):
+        return
+    # URLは API が返した幅のまま使う。Commons は任意の幅を受け付けなくなっていて、
+    # 手で 480px などに書き換えると 400 が返る。
+    body = ",\n  ".join(
+        '"%s":["%s","%s"]' % (n, v["url"], (v["artist"] + " · " + v["licence"] +
+                                            " · Wikimedia Commons").replace('"', "'"))
+        for n, v in sorted(index.items()))
+    block = (
+        "/* 行き先の写真。iOS 版と同じ照合表・同じ除外で選んだ58件。\n"
+        "   名前 -> [縮小版のURL, クレジット]。tools/photos.py が書き出す。 */\n"
+        "var PHOTOS = {\n  " + body + "\n};\n\n")
+    s = open(WEB, encoding="utf-8").read()
+    mark_a, mark_b = "/* 行き先の写真。", "var SPOTS = ["
+    if mark_a in s:
+        s = s[:s.index(mark_a)] + block + s[s.index(mark_b):]
+    else:
+        s = s[:s.index(mark_b)] + block + s[s.index(mark_b):]
+    open(WEB, "w", encoding="utf-8").write(s)
+    print(f"ウェブ版の PHOTOS も書き換えた（{len(index)}件）")
+
+
 def main():
     src = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser(
         "~/Downloads/sozoro_matched_185.xlsx")
@@ -145,11 +173,14 @@ def main():
         total += os.path.getsize(dst)
         # SPM の process はフォルダを畳むので、索きは名前だけで持つ。
         index[name] = {"file": stem, "artist": v["artist"], "licence": v["licence"],
-                       "licenceURL": v["licenceURL"], "page": v["page"]}
+                       "licenceURL": v["licenceURL"], "page": v["page"],
+                       # ウェブ版は焼き込めないので、Commons の縮小版を直に見る
+                       "url": v["thumb"]}
 
     json.dump(index, open(os.path.join(RES, "photos.json"), "w"),
               ensure_ascii=False, indent=1, sort_keys=True)
     print(f"焼き込み {len(index)}件 / {total/1024/1024:.1f}MB → Resources/photos/")
+    write_web(index)
     print("\n落としたもの:")
     for n, why in sorted(set(dropped)):
         print(f"  {n:<16}{why}")
