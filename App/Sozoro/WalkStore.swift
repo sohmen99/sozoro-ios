@@ -9,7 +9,7 @@ final class WalkStore {
 
     var stage: Stage = .planning
     var mode: Mode = .wander
-    var kinds: Set<Kind> = [.food, .culture]
+    var kinds: Set<Kind> = [.food, .culture, .green]
     var picks: [Spot] = []
     var destination: Spot?
     var origin: Coordinate?
@@ -54,6 +54,7 @@ final class WalkStore {
         return data.spots.filter {
             let d = Geo.distance(h, $0.coordinate)
             return abs(d - t) <= tol && d >= draw.config.minMetres
+                && kinds.contains($0.kind) && $0.kind.isOpen(at: clock())
         }.count
     }
 

@@ -6,14 +6,19 @@ final class SheetView: UIView {
     private let store: WalkStore
     var onBegin: (() -> Void)?
     /// 畳んだときに見えている高さ。ウェブ版の PEEK_H にあたる。
-    static let peekHeight: CGFloat = 92
+    static let peekHeight: CGFloat = 128
     private(set) var isOpen = true
     private var travel: CGFloat = 0
     private var dragStart: CGFloat = 0
     var onSlide: ((Bool) -> Void)?
 
-    private let foodChip = ChipButton(title: "Something to eat", symbol: "fork.knife")
-    private let cultChip = ChipButton(title: "Something old", symbol: "building.columns")
+    /// 何色が混んでいるのかと、いまの縮尺。地図の端に置くとシートが滑ったとき
+    /// 追いつかないので、カードの見出しに組み込んで一緒に動かす。
+    let foot: MapFoot
+    // ウェブ版の CATEGORIES と同じ3つ。3つ並ぶので見出しは短くする。
+    private let foodChip  = ChipButton(title: "Food",    symbol: "fork.knife")
+    private let cultChip  = ChipButton(title: "Culture", symbol: "building.columns")
+    private let greenChip = ChipButton(title: "Green",   symbol: "leaf")
     private let wanderRow = ModeRow(title: "Wander", symbol: "die.face.5",
         note: "One stop at a time, about 15 minutes each. Stop whenever you like.")
     private let crossRow = ModeRow(title: "Cross town", symbol: "arrow.triangle.turn.up.right.diamond",
@@ -24,6 +29,7 @@ final class SheetView: UIView {
 
     init(store: WalkStore) {
         self.store = store
+        self.foot = MapFoot(lang: store.lang)
         super.init(frame: .zero)
         backgroundColor = Theme.washi
         layer.cornerRadius = 22
@@ -119,10 +125,11 @@ final class SheetView: UIView {
                             Theme.body(12.5), Theme.muted, lines: 0)
 
         let lookLabel = UILabel(); lookLabel.attributedText = Theme.label("Looking for")
-        let chips = stack(.horizontal, 8, [foodChip, cultChip])
+        let chips = stack(.horizontal, 6, [foodChip, cultChip, greenChip])
         chips.distribution = .fillEqually
-        foodChip.addAction(UIAction { [weak self] _ in self?.store.toggle(.food) }, for: .touchUpInside)
-        cultChip.addAction(UIAction { [weak self] _ in self?.store.toggle(.culture) }, for: .touchUpInside)
+        foodChip.addAction(UIAction  { [weak self] _ in self?.store.toggle(.food) },    for: .touchUpInside)
+        cultChip.addAction(UIAction  { [weak self] _ in self?.store.toggle(.culture) }, for: .touchUpInside)
+        greenChip.addAction(UIAction { [weak self] _ in self?.store.toggle(.green) },   for: .touchUpInside)
 
         let modeLabel = UILabel(); modeLabel.attributedText = Theme.label("How you walk")
         wanderRow.addAction(UIAction { [weak self] _ in self?.store.set(mode: .wander) }, for: .touchUpInside)
@@ -152,15 +159,24 @@ final class SheetView: UIView {
          stack(.vertical, 8, [modeLabel, wanderRow, crossRow, noteLabel]),
          beginButton, footLabel].forEach { body.addArrangedSubview($0) }
 
-        let col = stack(.vertical, 12, [gripWrap, peekRow, body])
+        let col = stack(.vertical, 12, [gripWrap, foot, peekRow, body])
         addSubview(col)
         col.pin(to: self, insets: .init(top: 12, left: 20, bottom: 20, right: 20))
         syncPeek()
     }
 
     func refresh() {
-        foodChip.on = store.kinds.contains(.food)
-        cultChip.on = store.kinds.contains(.culture)
+        // 閉まっている時間帯は押せなくする。黙って抽選から外すのがいちばん悪い。
+        let hour = store.clock()
+        for (chip, kind) in [(foodChip, Kind.food), (cultChip, .culture), (greenChip, .green)] {
+            let open = kind.isOpen(at: hour)
+            chip.isEnabled = open
+            chip.alpha = open ? 1 : 0.38
+            if !open, store.kinds.contains(kind), store.kinds.count > 1 { store.kinds.remove(kind) }
+        }
+        foodChip.on  = store.kinds.contains(.food)
+        cultChip.on  = store.kinds.contains(.culture)
+        greenChip.on = store.kinds.contains(.green)
         wanderRow.on = store.mode == .wander
         crossRow.on = store.mode == .crossTown
 
@@ -185,8 +201,9 @@ final class SheetView: UIView {
             noteLabel.isHidden = false
         }
         peekSummary.text = [
-            store.kinds.contains(.food) ? "Eat" : nil,
-            store.kinds.contains(.culture) ? "Old" : nil
+            store.kinds.contains(.food) ? "Food" : nil,
+            store.kinds.contains(.culture) ? "Culture" : nil,
+            store.kinds.contains(.green) ? "Green" : nil
         ].compactMap { $0 }.joined(separator: " · ")
             + " / " + (store.mode == .wander ? "Wander" : "Cross town")
         footLabel.text = store.mode == .crossTown

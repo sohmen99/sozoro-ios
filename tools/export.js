@@ -42,19 +42,27 @@ for(const p of P) for(const we of [true,false])
   golden.footfall.push({at:p,weekend:we,value:g.Crowd.footfall({lat:p[0],lon:p[1]},we)});
 const when=new Date(2026,7,18,14,0,0);          // 2026-08-18 14:00 火曜
 const spots=g.SpotSource.build();
-for(const idx of [0,10,40,80,120,155]){
+for(const idx of [0,10,40,80,120,155,157,163,169]){   // 156以降は みどり
   const s=spots[idx];
   golden.crowd.push({name:s.name,kind:s.kind,pop:s.pop,lat:s.lat,lon:s.lon,
                      at:"2026-08-18T14:00", value:g.Crowd.at(s,when)});
 }
 const origin={lat:35.7138,lon:139.7772};
 const t=g.Draw.targetMetres(g.CONFIG.LEG_MIN), tol=g.Draw.tolMetres();
-const ctx={origin,target:t,tol,max:t+tol*2.4,moods:["food","culture"],avoid:true,visited:new Set(),now:when};
-for(const idx of [0,10,40,80,120,155]){
+const ctx={origin,target:t,tol,max:t+tol*2.4,moods:["food","culture","green"],avoid:true,visited:new Set(),now:when};
+for(const idx of [0,10,40,80,120,155,157,163,169]){
   const s=spots[idx];
   golden.weight.push({name:s.name,value:g.Draw.weight(s,ctx)});
 }
 golden.band={target:t,tol:tol,max:ctx.max};
+// 深夜。飲食が閉まり、寺社と公園だけが残る時間帯の重み。
+const night=new Date(2026,7,18,2,0,0);
+const nctx={origin,target:t,tol,max:ctx.max,moods:["food","culture","green"],avoid:true,visited:new Set(),now:night};
+golden.weightNight=[];
+for(const idx of [0,10,40,80,120,155,157,163,169]){
+  const s=spots[idx];
+  golden.weightNight.push({name:s.name,kind:s.kind,value:g.Draw.weight(s,nctx)});
+}
 for(const p of P){
   const o={lat:p[0],lon:p[1]};
   const opts=g.Route.stationsFrom(o);

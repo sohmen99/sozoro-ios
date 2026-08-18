@@ -34,7 +34,7 @@ final class PickCard: UIControl {
         thumb.layer.addSublayer(g)
 
         let icon = UIImageView(image: UIImage(systemName:
-            spot.kind == .food ? "fork.knife" : "building.columns"))
+            spot.kind == .food ? "fork.knife" : (spot.kind == .green ? "leaf" : "building.columns")))
         icon.tintColor = UIColor.white.withAlphaComponent(0.5)
         icon.translatesAutoresizingMaskIntoConstraints = false
         thumb.addSubview(icon)
@@ -56,8 +56,14 @@ final class PickCard: UIControl {
         var h = 5381
         for u in spot.name.unicodeScalars { h = (h &* 33) &+ Int(u.value) }
         let t = CGFloat(abs(h) % 1000) / 1000
-        let hue: CGFloat = spot.kind == .food ? (0.02 + 0.11 * t) : (0.52 + 0.18 * t)
-        let sat: CGFloat = spot.kind == .food ? 0.42 + 0.16 * t : 0.26 + 0.16 * t
+        // ぼかしたあとに残るのは色と明暗だけ。種類ごとに帯を分けて、場所ごとに中でずらす。
+        let hue: CGFloat
+        let sat: CGFloat
+        switch spot.kind {
+        case .food:    hue = 0.02 + 0.11 * t; sat = 0.42 + 0.16 * t
+        case .culture: hue = 0.52 + 0.18 * t; sat = 0.26 + 0.16 * t
+        case .green:   hue = 0.24 + 0.12 * t; sat = 0.30 + 0.18 * t
+        }
         let bri: CGFloat = 0.34 + 0.20 * CGFloat(abs(h / 7) % 100) / 100
         return UIColor(hue: hue, saturation: sat, brightness: bri, alpha: 1)
     }

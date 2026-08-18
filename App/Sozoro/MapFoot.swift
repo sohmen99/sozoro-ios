@@ -11,10 +11,18 @@ final class MapFoot: UIView {
 
     init(lang: Lang) {
         super.init(frame: .zero)
-        backgroundColor = Theme.washi.withAlphaComponent(0.92)
-        layer.cornerRadius = 8
-        layer.borderWidth = 1
-        layer.borderColor = Theme.hairline.cgColor
+        // シートの見出しの中なので、下敷きは要らない。上下に細い罫だけ引く。
+        backgroundColor = .clear
+        let rule = UIView()
+        rule.backgroundColor = Theme.hairline
+        rule.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(rule)
+        NSLayoutConstraint.activate([
+            rule.leadingAnchor.constraint(equalTo: leadingAnchor),
+            rule.trailingAnchor.constraint(equalTo: trailingAnchor),
+            rule.bottomAnchor.constraint(equalTo: bottomAnchor),
+            rule.heightAnchor.constraint(equalToConstant: 1)
+        ])
 
         let ja = lang == .ja
         let head = UILabel()
@@ -51,7 +59,7 @@ final class MapFoot: UIView {
         let row = stack(.horizontal, 16, [stack(.vertical, 6, [head, keys]), UIView(), scale],
                         align: .bottom)
         addSubview(row)
-        row.pin(to: self, insets: .init(top: 9, left: 12, bottom: 9, right: 12))
+        row.pin(to: self, insets: .init(top: 2, left: 0, bottom: 10, right: 0))
     }
     required init?(coder: NSCoder) { fatalError() }
 

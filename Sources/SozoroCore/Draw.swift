@@ -39,7 +39,8 @@ public struct Draw: Sendable {
     public func weight(_ spot: Spot, _ ctx: Context, tolerance tol: Double? = nil) -> Double {
         let tol = tol ?? tolerance
         let d = Geo.distance(ctx.origin, spot.coordinate)
-        guard d >= config.minMetres, !ctx.visited.contains(spot.id), ctx.kinds.contains(spot.kind)
+        guard d >= config.minMetres, !ctx.visited.contains(spot.id), ctx.kinds.contains(spot.kind),
+              spot.kind.isOpen(at: ctx.now)
         else { return 0 }
 
         // 1 · 帯の外は 0。なだらかな山だけだと、外側の輪ほど候補が多いので合計で勝ってしまう。

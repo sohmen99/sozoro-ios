@@ -1,12 +1,35 @@
 import Foundation
 
 public enum Kind: String, Codable, Sendable, CaseIterable {
-    case food, culture
+    case food, culture, green
 
-    public var labelEN: String { self == .food ? "Place to eat" : "Shrine, temple or landmark" }
-    public var labelJA: String { self == .food ? "飲食店" : "文化財" }
-    /// 集客力の見立て。混雑推定の層2。
-    public var pop: Double { self == .food ? 0.24 : 0.32 }
+    public var labelEN: String {
+        switch self {
+        case .food:    return "Place to eat"
+        case .culture: return "Shrine, temple or landmark"
+        case .green:   return "Park or garden"
+        }
+    }
+    public var labelJA: String {
+        switch self {
+        case .food: return "飲食店"; case .culture: return "文化財"; case .green: return "公園・庭園"
+        }
+    }
+    /// 開いている時間。寺社と公園は門の外からでも成立するので、時間を持たない。
+    public var openHours: (Int, Int)? { self == .food ? (8, 22) : nil }
+    /// その時刻に行き先として成立するか。
+    public func isOpen(at when: Date, calendar: Calendar = .current) -> Bool {
+        guard let h = openHours else { return true }
+        let hour = calendar.component(.hour, from: when)
+        return h.0 <= h.1 ? (hour >= h.0 && hour < h.1) : (hour >= h.0 || hour < h.1)
+    }
+
+    /// 集客力の見立て。混雑推定の層2。ウェブ版の LAYERS と同じ値。
+    public var pop: Double {
+        switch self {
+        case .food: return 0.24; case .culture: return 0.32; case .green: return 0.25
+        }
+    }
 }
 
 public struct Spot: Identifiable, Equatable, Codable, Sendable {

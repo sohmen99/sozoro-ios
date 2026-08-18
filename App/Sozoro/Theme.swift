@@ -17,8 +17,8 @@ enum Theme {
     static let ai        = UIColor(hex: 0x2A5C8A)
     static let aiLight   = UIColor(hex: 0x7FB3DC)
     static let quiet     = UIColor(hex: 0x0E9578)
-    static let mid       = UIColor(hex: 0xCE8E24)
-    static let busy      = UIColor(hex: 0xC0392F)
+    static let mid       = UIColor(hex: 0xC0392F)
+    static let busy      = UIColor(hex: 0x7B2D8E)
     static let quietDk   = UIColor(hex: 0x35B79A)
 
     /// 見出しは明朝。ウェブ版と同じ狙いで、和文が入っても崩れない。
@@ -43,7 +43,7 @@ enum Theme {
     }
     /// 混雑の三段。地点の印とチップに使う。ウェブ版と同じ切り方。
     static func crowdColour(_ v: Int) -> UIColor {
-        v <= 45 ? quiet : (v <= 75 ? mid : busy)
+        v < 40 ? quiet : (v < 70 ? mid : busy)
     }
 
 }

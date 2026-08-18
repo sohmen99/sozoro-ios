@@ -69,16 +69,6 @@ final class MapViewController: UIViewController {
             sheet.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 22)
         ])
 
-        // 端の凡例と縮尺。何色が混んでいるのか言わずに色で塗るのは、読めない図になる。
-        // シートの上端に合わせるので、シートを階層に入れたあとで張る。
-        view.addSubview(foot)
-        foot.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            foot.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 14),
-            foot.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -14),
-            foot.bottomAnchor.constraint(equalTo: sheet.topAnchor, constant: -10)
-        ])
-
         view.addSubview(offArea)
         offArea.translatesAutoresizingMaskIntoConstraints = false
         offArea.isHidden = true
@@ -113,10 +103,9 @@ final class MapViewController: UIViewController {
         sheet.refresh()
         layoutOffArea()
         refreshOffArea()
-        foot.update(from: map)
+        sheet.foot.update(from: map)
     }
 
-    private lazy var foot = MapFoot(lang: store.lang)
     private var detail: LandmarkDetailView?
     private var detailScrim: UIView?
     private var meMarker: MeAnnotation?
@@ -248,7 +237,7 @@ final class LandmarkPin: NSObject, MKAnnotation {
 }
 
 extension MapViewController: MKMapViewDelegate {
-    func mapView(_ m: MKMapView, regionDidChangeAnimated: Bool) { foot.update(from: m) }
+    func mapView(_ m: MKMapView, regionDidChangeAnimated: Bool) { sheet.foot.update(from: m) }
 
     func mapView(_ m: MKMapView, rendererFor o: MKOverlay) -> MKOverlayRenderer {
         o is HeatOverlay ? HeatRenderer(overlay: o) : MKOverlayRenderer(overlay: o)

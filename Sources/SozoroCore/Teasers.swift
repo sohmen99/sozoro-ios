@@ -14,6 +14,8 @@ public enum Copy {
     }
 
     static let enCategory: [String: String] = [
+        "公園": "Park",
+        "庭園": "Garden",
         "文化財のある寺社": "Temple or shrine",
         "名所・史跡": "Historic site",
         "文化財": "Registered property",
@@ -134,6 +136,12 @@ public enum Copy {
             ("Small, and free, and rarely busy", "小さくて、ただで、空いている")
         ],
         "park": [
+            ("A green pocket the map barely names", "地図にほとんど名前の出ない、みどりの一角"),
+            ("Trees, a bench, and no one hurrying", "木と、ベンチと、急ぐ人のいない場所"),
+            ("Someone laid this out to be walked slowly", "ゆっくり歩くために造られた場所"),
+            ("Open air, and the city a street away", "外の空気。街はひと筋むこう"),
+            ("Seasonal, if you catch the right week", "季節がある。当たる週に来られれば"),
+            ("Quiet enough to hear the gravel", "砂利の音が聞こえるくらい静か"),
             ("Somewhere to sit and not be hurried", "誰にも急かされずに座れる場所"),
             ("Trees, and the street falling away", "木があって、通りの音が遠くなる"),
             ("A bench, and time you did not plan", "ベンチと、予定していなかった時間")

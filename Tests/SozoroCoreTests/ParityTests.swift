@@ -15,6 +15,7 @@ final class ParityTests: XCTestCase {
         let meshLo: Double, meshHi: Double
         let geo: [Geo], footfall: [Foot], crowd: [Crowd], weight: [Weight]
         let band: Band, routes: [Route]
+        let weightNight: [Weight]
     }
 
     static let golden: Golden = {
@@ -72,13 +73,29 @@ final class ParityTests: XCTestCase {
     func testWeight() {
         let d = Draw()
         let ctx = Draw.Context(origin: .init(lat: 35.7138, lon: 139.7772),
-                               kinds: [.food, .culture], now: Self.when)
+                               kinds: [.food, .culture, .green], now: Self.when)
         let spots = SozoroData.shared.spots
         for g in Self.golden.weight {
             guard let s = spots.first(where: { $0.name == g.name }) else {
                 return XCTFail("地点が無い: \(g.name)")
             }
             XCTAssertEqual(d.weight(s, ctx), g.value, accuracy: 1e-9, "重み \(g.name)")
+        }
+    }
+
+    /// 深夜。飲食が閉まり、寺社と公園だけが残る。ウェブ版の isOpen と同じになるか。
+    func testWeightAtNight() {
+        let d = Draw()
+        var c = DateComponents(); c.year = 2026; c.month = 8; c.day = 18; c.hour = 2
+        let night = Calendar.current.date(from: c)!
+        let ctx = Draw.Context(origin: .init(lat: 35.7138, lon: 139.7772),
+                               kinds: [.food, .culture, .green], now: night)
+        let spots = SozoroData.shared.spots
+        for g in Self.golden.weightNight {
+            guard let s = spots.first(where: { $0.name == g.name }) else {
+                return XCTFail("地点が無い: \(g.name)")
+            }
+            XCTAssertEqual(d.weight(s, ctx), g.value, accuracy: 1e-9, "深夜の重み \(g.name)")
         }
     }
 
