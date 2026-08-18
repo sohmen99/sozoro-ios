@@ -68,10 +68,18 @@ final class CompassDial: UIView {
 
     /// 針。ウェブ版と同じ長さで、行き先側だけを矢にする。
     private func buildNeedle() {
+        // 重り側。ウェブ版は 150→196 の線と、172〜196 の小さな三角。
         let tail = CAShapeLayer()
-        tail.path = UIBezierPath(roundedRect: CGRect(x: -1.5, y: 6, width: 3, height: 46),
-                                 cornerRadius: 1.5).cgPath
-        tail.fillColor = Theme.mutedDark.withAlphaComponent(0.5).cgColor
+        let tp = UIBezierPath()
+        tp.move(to: CGPoint(x: 0, y: 22)); tp.addLine(to: CGPoint(x: -8, y: 46))
+        tp.addLine(to: CGPoint(x: 8, y: 46)); tp.close()
+        tail.path = tp.cgPath
+        tail.fillColor = Theme.needleTail.cgColor
+
+        let tailShaft = CAShapeLayer()
+        tailShaft.path = UIBezierPath(roundedRect: CGRect(x: -1.5, y: -1.5, width: 3, height: 47.5),
+                                      cornerRadius: 1.5).cgPath
+        tailShaft.fillColor = Theme.needleTail.cgColor
 
         let shaft = CAShapeLayer()
         shaft.path = UIBezierPath(roundedRect: CGRect(x: -2.5, y: -88, width: 5, height: 88),
@@ -95,26 +103,39 @@ final class CompassDial: UIView {
         hub.fillColor = Theme.sumi.cgColor
         hub.strokeColor = Theme.quietDk.cgColor; hub.lineWidth = 2
 
-        [tail, shaft, head, bead, hub].forEach { needle.addSublayer($0) }
+        // 頭の先の短い印。どちらの端を追うのか、ひと目で分かるように。
+        let cap = CAShapeLayer()
+        cap.path = UIBezierPath(roundedRect: CGRect(x: -1.5, y: -146, width: 3, height: 11),
+                                cornerRadius: 1.5).cgPath
+        cap.fillColor = Theme.quietDk.cgColor
+
+        [tailShaft, tail, shaft, head, bead, cap, hub].forEach { needle.addSublayer($0) }
     }
 
     override func layoutSubviews() {
         super.layoutSubviews()
         // 300 の座標系で組んだものを、いまの大きさに合わせて縮める。
+        //
+        // frame で当ててはいけない。frame は bounds・position・transform から
+        // 逆算される値なので、すでに縮尺が掛かっている層に frame を代入すると、
+        // その縮尺のぶん bounds が小さく取り直される。呼ばれるたびに縮む。
+        // 距離の表示が変わるだけでここが走るので、歩き始めると盤がずれていく。
+        // bounds と position と縮尺を別々に置けば、何度呼ばれても同じ結果になる。
         let side = min(bounds.width, bounds.height)
         let k = side / Self.box
-        let ox = (bounds.width - side) / 2, oy = (bounds.height - side) / 2
-        let fit = CATransform3DConcat(CATransform3DMakeScale(k, k, 1),
-                                      CATransform3DMakeTranslation(ox, oy, 0))
-        [rings, dashed, ticks, progress].forEach {
-            $0.frame = bounds; $0.transform = fit
+        let c = CGPoint(x: bounds.midX, y: bounds.midY)
+        let square = CGRect(x: 0, y: 0, width: Self.box, height: Self.box)
+        for l in [rings, dashed, ticks, progress] {
+            l.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+            l.bounds = square
+            l.position = c
+            l.transform = CATransform3DMakeScale(k, k, 1)
         }
         // 針は中心を軸に回すので、位置だけ合わせて拡大は別に持つ。
-        needle.position = CGPoint(x: ox + side / 2, y: oy + side / 2)
+        needle.position = c
         needle.bounds = .zero
         applyNeedleTransform()
 
-        let c = CGPoint(x: ox + side / 2, y: oy + side / 2)
         let rr = 142 * k
         let places: [(CGFloat, CGFloat)] = [(0, -rr - 2), (rr + 2, 0), (0, rr + 2), (-rr - 2, 0)]
         for (i, l) in marks.enumerated() {
@@ -122,10 +143,19 @@ final class CompassDial: UIView {
             l.center = CGPoint(x: c.x + places[i].0, y: c.y + places[i].1)
         }
         label.sizeToFit()
-        label.center = CGPoint(x: c.x, y: c.y - 40 * k)
+        placeLabel()
     }
 
     private var scale: CGFloat { min(bounds.width, bounds.height) / Self.box }
+
+    /// 「THIS WAY」は針と一緒に動くが、回さずに立てておく。
+    /// ウェブ版では #needle の中に入っていて、回した分を打ち消してある。
+    private func placeLabel() {
+        let k = scale
+        let a = CGFloat(shown) * .pi / 180
+        let r = 34 * k
+        label.center = CGPoint(x: bounds.midX + sin(a) * r, y: bounds.midY - cos(a) * r)
+    }
 
     private func applyNeedleTransform() {
         let k = scale
@@ -144,8 +174,11 @@ final class CompassDial: UIView {
         applyNeedleTransform()
         progress.strokeEnd = CGFloat(progressValue ?? 0)
         CATransaction.commit()
-        // 文字は回さない。南を向いたとき逆さになるので。
-        UIView.animate(withDuration: 0.25) { self.label.transform = .identity }
+        // 文字は回さない。南を向いたとき逆さになるので。位置だけ針についていく。
+        UIView.animate(withDuration: 0.25) {
+            self.label.transform = .identity
+            self.placeLabel()
+        }
     }
 }
 
@@ -178,6 +211,8 @@ final class CompassViewController: UIViewController {
         cfg.baseForegroundColor = Theme.sumi
         cfg.cornerStyle = .large
         cfg.contentInsets = .init(top: 13, leading: 16, bottom: 13, trailing: 16)
+        cfg.attributedTitle = AttributedString(
+            "I'm here", attributes: AttributeContainer([.font: Theme.body(16, .semibold)]))
         arriveButton.configuration = cfg
         // 着いていないのに押して終わってしまうのを防ぐ。遠いときだけ確認する。
         arriveButton.addAction(UIAction { [weak self] _ in

@@ -10,6 +10,8 @@ enum Theme {
     static let ink2      = UIColor(hex: 0x454C58)
     static let muted     = UIColor(hex: 0x7B8492)
     static let mutedDark = UIColor(hex: 0x8E96A4)
+    /// 羅針盤の重り側。ウェブ版の #3B434F。
+    static let needleTail = UIColor(hex: 0x3B434F)
     static let hairline  = UIColor(hex: 0xDBD8D0)
     static let hairlineDk = UIColor(hex: 0x333944)
     static let washi     = UIColor(hex: 0xF4F2EC)
