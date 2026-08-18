@@ -38,8 +38,8 @@ public enum Geo {
         return Coordinate(lat: la2 * 180 / .pi, lon: lo2 * 180 / .pi)
     }
 
-    static let compassJA = ["北", "北東", "東", "南東", "南", "南西", "西", "北西"]
-    static let compassEN = ["north", "north-east", "east", "south-east",
+    public static let compassJA = ["北", "北東", "東", "南東", "南", "南西", "西", "北西"]
+    public static let compassEN = ["north", "north-east", "east", "south-east",
                             "south", "south-west", "west", "north-west"]
 
     public static func compassIndex(_ deg: Double) -> Int {

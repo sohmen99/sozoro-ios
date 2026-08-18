@@ -1,6 +1,14 @@
 # SozoroCore
 
-**Tokyo sozoro のロジックを Swift に移したもの。UIは持っていません。**
+**Tokyo sozoro の iOS 版。ロジックはウェブ版と同じ数字を返すことをテストで確かめてあります。**
+
+```sh
+open App/Sozoro.xcodeproj      # Xcode で開いて ⌘R
+```
+
+シミュレータでも実機でも動きます。実機で見るときは、Signing の Team を自分のものに
+変えてください（`PRODUCT_BUNDLE_IDENTIFIER` は `dev.sozoro.app` にしてあります）。
+位置情報の許可文は Info.plist ではなくビルド設定に入れてあるので、別ファイルはありません。
 
 ウェブ版（[tokyo-sozoro](https://github.com/sohmen99/tokyo-sozoro)）と**同じ数字を返すことをテストで確かめて**あります。
 SwiftUI でも UIKit でも、この上に好きな画面を載せられます。
@@ -15,6 +23,20 @@ swift test          # ウェブ版が出した正解値と突き合わせる
 ---
 
 ## 入っているもの
+
+### アプリ（`App/`）
+
+| | |
+|---|---|
+| `SozoroApp` | 入口。起動時に位置情報を頼む |
+| `LocationService` | CLLocationManager の薄い包み。真北が取れないときは nil にして文字盤を北固定にする |
+| `ContentView` | MapKit の地図に基準地点の混み具合を色で出し、下のシートで歩き方を決める |
+| `WalkModel` | 状態をひとつに集めたもの。ウェブ版で散らばっていた分 |
+| `PickView` | 三択。ぼかした色と伏せた一行と距離だけ |
+| `CompassView` | 針は片側だけ。文字は回さず立てる。北をまたいでも逆回りしない |
+| `ArrivalView` | 到着。ここで初めて正体を出し、続けるか終えるかを聞く |
+
+### ロジック（`Sources/SozoroCore/`）
 
 | | |
 |---|---|
@@ -75,13 +97,16 @@ Resources/names.json           読みが分かっている分の英語名
 
 ---
 
-## 次にやること
+## まだ無いもの
 
-- `LocationService`（CLLocationManager の薄い包み）
-- `WalkStore`（記録と印。いまは localStorage）
-- SwiftUI の画面：表紙・地図・シート・三択・コンパス・到着・印
+- **記録と印**（ウェブ版の15種）。`WalkStore` を書けば載る
+- **共有**（`UIActivityViewController` に画像を渡すだけ）
+- **表紙**と**印のギャラリー**
+- **デモモード**（場所と時刻を置いて確かめるやつ）
+- 読みが分かっていない128件の日本語名。[sozoro-romaji](https://github.com/sohmen99/sozoro-romaji) が埋まったら差し込む
 
-ロジックはもう動くので、**画面を書けば動きます。**
+地図は MapKit なので、ウェブ版のベースマップ（SVG 71KB）と投影のコードと生成
+スクリプトは要らなくなりました。「寄ると荒い」も起きません。
 
 ---
 
