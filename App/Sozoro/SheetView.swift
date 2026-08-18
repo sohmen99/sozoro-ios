@@ -5,6 +5,12 @@ import SozoroCore
 final class SheetView: UIView {
     private let store: WalkStore
     var onBegin: (() -> Void)?
+    /// 畳んだときに見えている高さ。ウェブ版の PEEK_H にあたる。
+    static let peekHeight: CGFloat = 92
+    private(set) var isOpen = true
+    private var travel: CGFloat = 0
+    private var dragStart: CGFloat = 0
+    var onSlide: ((Bool) -> Void)?
 
     private let foodChip = ChipButton(title: "Something to eat", symbol: "fork.knife")
     private let cultChip = ChipButton(title: "Something old", symbol: "building.columns")
@@ -29,8 +35,71 @@ final class SheetView: UIView {
         layer.shadowOffset = CGSize(width: 0, height: -8)
         build()
         refresh()
+        let pan = UIPanGestureRecognizer(target: self, action: #selector(dragged(_:)))
+        addGestureRecognizer(pan)
+        let tap = UITapGestureRecognizer(target: self, action: #selector(tappedPeek(_:)))
+        peekRow.addGestureRecognizer(tap)
+        peekRow.isUserInteractionEnabled = true
     }
     required init?(coder: NSCoder) { fatalError() }
+
+    /// 畳んだときに出しっぱなしにする一行。押すと開く。
+    private let peekRow = UIView()
+    private let peekSummary = makeLabel("", Theme.mono(11.5), Theme.muted)
+
+    /// 指で引く。離したところで開くか閉じるかを決める。
+    /// 軽く叩いただけのときは、その場で反転させる。
+    @objc private func dragged(_ g: UIPanGestureRecognizer) {
+        let dy = g.translation(in: self).y
+        switch g.state {
+        case .began:
+            dragStart = transform.ty
+        case .changed:
+            var y = dragStart + dy
+            // 行き過ぎたぶんは3割だけ効かせて、突き当たりを指に伝える。
+            if y < 0 { y = y * 0.3 }
+            if y > travel { y = travel + (y - travel) * 0.3 }
+            transform = CGAffineTransform(translationX: 0, y: y)
+        case .ended, .cancelled:
+            let v = g.velocity(in: self).y
+            let open = abs(v) > 420 ? (v < 0) : (transform.ty < travel / 2)
+            setOpen(open, animated: true)
+        default: break
+        }
+    }
+
+    @objc private func tappedPeek(_ g: UITapGestureRecognizer) {
+        setOpen(!isOpen, animated: true)
+    }
+
+    func setOpen(_ open: Bool, animated: Bool) {
+        isOpen = open
+        travel = max(0, bounds.height - Self.peekHeight)
+        let t = CGAffineTransform(translationX: 0, y: open ? 0 : travel)
+        onSlide?(open)
+        guard animated else { transform = t; syncPeek(); return }
+        UIView.animate(withDuration: 0.36, delay: 0, usingSpringWithDamping: 0.86,
+                       initialSpringVelocity: 0.2, options: [.allowUserInteraction]) {
+            self.transform = t
+            self.syncPeek()
+        }
+    }
+
+    private func syncPeek() {
+        body.alpha = isOpen ? 1 : 0
+        body.isUserInteractionEnabled = isOpen
+        peekRow.alpha = isOpen ? 0 : 1
+        chevron.transform = CGAffineTransform(rotationAngle: isOpen ? 0 : .pi)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        travel = max(0, bounds.height - Self.peekHeight)
+        if !isOpen { transform = CGAffineTransform(translationX: 0, y: travel) }
+    }
+
+    private let body = UIStackView()
+    private let chevron = UIImageView(image: UIImage(systemName: "chevron.up"))
 
     private func build() {
         let grip = UIView()
@@ -67,15 +136,26 @@ final class SheetView: UIView {
         beginButton.configuration = cfg
         beginButton.addAction(UIAction { [weak self] _ in self?.onBegin?() }, for: .touchUpInside)
 
-        let col = stack(.vertical, 16, [
-            gripWrap, stack(.vertical, 3, [title, sub]),
-            stack(.vertical, 8, [lookLabel, chips]),
-            stack(.vertical, 8, [modeLabel, wanderRow, crossRow, noteLabel]),
-            beginButton, footLabel
-        ])
-        col.setCustomSpacing(20, after: gripWrap)
+        // 畳んだときの一行。いま何を選んでいるかだけ出す。
+        chevron.tintColor = Theme.muted
+        chevron.setContentHuggingPriority(.required, for: .horizontal)
+        let peekTitle = makeLabel("Where to?", Theme.body(13, .semibold), Theme.ink)
+        let peekStack = stack(.horizontal, 10, [peekTitle, peekSummary, UIView(), chevron], align: .center)
+        peekRow.addSubview(peekStack)
+        peekStack.pin(to: peekRow, insets: .init(top: 0, left: 0, bottom: 0, right: 0))
+        peekRow.translatesAutoresizingMaskIntoConstraints = false
+        peekRow.heightAnchor.constraint(equalToConstant: 34).isActive = true
+
+        body.axis = .vertical; body.spacing = 16
+        [stack(.vertical, 3, [title, sub]),
+         stack(.vertical, 8, [lookLabel, chips]),
+         stack(.vertical, 8, [modeLabel, wanderRow, crossRow, noteLabel]),
+         beginButton, footLabel].forEach { body.addArrangedSubview($0) }
+
+        let col = stack(.vertical, 12, [gripWrap, peekRow, body])
         addSubview(col)
         col.pin(to: self, insets: .init(top: 12, left: 20, bottom: 20, right: 20))
+        syncPeek()
     }
 
     func refresh() {
@@ -91,11 +171,24 @@ final class SheetView: UIView {
             : store.note
         noteLabel.isHidden = (noteLabel.text ?? "").isEmpty
 
+        // 区の外にいると行き先が薄くなるので、押せなくして理由を出す。
+        // 黙って押せないボタンが、いちばんよくない。
         let ready = store.here != nil
-        beginButton.isEnabled = ready
+        let outside = ready && !store.insideWard
+        beginButton.isEnabled = ready && !outside
+        beginButton.alpha = beginButton.isEnabled ? 1 : 0.42
         beginButton.configuration?.attributedTitle = AttributedString(
-            ready ? "Begin" : "Looking for you…",
+            !ready ? "Looking for you…" : (outside ? "Too far from the ward" : "Begin"),
             attributes: AttributeContainer([.font: Theme.body(16, .semibold)]))
+        if outside {
+            noteLabel.text = "You are outside Taito. The places we can send you to are all back that way."
+            noteLabel.isHidden = false
+        }
+        peekSummary.text = [
+            store.kinds.contains(.food) ? "Eat" : nil,
+            store.kinds.contains(.culture) ? "Old" : nil
+        ].compactMap { $0 }.joined(separator: " · ")
+            + " / " + (store.mode == .wander ? "Wander" : "Cross town")
         footLabel.text = store.mode == .crossTown
             ? "A fixed line out to a station."
             : "About \(String(format: "%.1f", store.draw.target / 1000)) km to the next stop."

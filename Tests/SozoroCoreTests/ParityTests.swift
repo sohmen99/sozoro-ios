@@ -117,6 +117,24 @@ final class ParityTests: XCTestCase {
     }
 }
 
+extension ParityTests {
+    /// 区の内外。ウェブ版の insideWard と同じ結果になること。
+    func testWardContains() {
+        let w = Ward.taito
+        XCTAssertFalse(w.rings.isEmpty, "区の輪郭を読めていない")
+        let cases: [(String, Double, Double, Bool)] = [
+            ("上野公園", 35.71538, 139.7734, true), ("浅草寺", 35.7148, 139.7967, true),
+            ("谷中", 35.7276, 139.7663, true), ("蔵前", 35.7039, 139.7897, true),
+            ("根岸", 35.7255, 139.7860, true),
+            ("南千住", 35.7331, 139.7986, false), ("東京駅", 35.6812, 139.7671, false),
+            ("押上", 35.7101, 139.8134, false), ("日暮里", 35.7278, 139.7710, false)
+        ]
+        for (n, la, lo, want) in cases {
+            XCTAssertEqual(w.contains(Coordinate(lat: la, lon: lo)), want, n)
+        }
+    }
+}
+
 /// 種を決めた乱数。テストを毎回同じにする。
 struct SeededGenerator: RandomNumberGenerator {
     var state: UInt64

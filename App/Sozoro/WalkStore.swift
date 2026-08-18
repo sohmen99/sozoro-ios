@@ -58,6 +58,9 @@ final class WalkStore {
     }
     func set(mode m: Mode) { mode = m; changed() }
 
+    /// 台東区の中にいるか。外なら行き先が薄くなるので、そう伝える。
+    var insideWard: Bool { here.map { Ward.taito.contains($0) } ?? true }
+
     func begin() {
         guard let h = here else { return }
         origin = h

@@ -45,7 +45,12 @@ final class MapViewController: UIViewController {
         }
         addMeMarker()
 
+        view.addSubview(offArea)
+        offArea.translatesAutoresizingMaskIntoConstraints = false
+        offArea.isHidden = true
+
         sheet.onBegin = { [weak self] in self?.onBegin?() }
+        sheet.onSlide = { [weak self] _ in self?.layoutOffArea() }
         view.addSubview(sheet)
         sheet.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -82,6 +87,8 @@ final class MapViewController: UIViewController {
             ])
         }
         sheet.refresh()
+        layoutOffArea()
+        refreshOffArea()
     }
 
     private var meMarker: MKPointAnnotation?
@@ -104,7 +111,39 @@ final class MapViewController: UIViewController {
 
     func locationMoved() {
         sheet.refresh()
+        refreshOffArea()
         if demo.on { meMarker.map { map.removeAnnotation($0) }; addMeMarker() }
+    }
+
+    /// 区の外にいるとき。行き先の母集団が台東区と荒川区に寄っているので、
+    /// 遠くから開いた人には、いちばん近い基準地点との関係で位置を伝える。
+    private let offArea = OffAreaBanner()
+
+    private func layoutOffArea() {
+        NSLayoutConstraint.deactivate(offAreaConstraints)
+        offAreaConstraints = [
+            offArea.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 14),
+            offArea.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -14),
+            offArea.bottomAnchor.constraint(equalTo: sheet.topAnchor, constant: -10)
+        ]
+        NSLayoutConstraint.activate(offAreaConstraints)
+    }
+    private var offAreaConstraints: [NSLayoutConstraint] = []
+
+    func refreshOffArea() {
+        guard let h = store.here else { offArea.isHidden = true; return }
+        if Ward.taito.contains(h) { offArea.isHidden = true; return }
+        guard let n = Ward.taito.nearest(to: h, among: store.landmarks) else {
+            offArea.isHidden = true; return
+        }
+        let km = n.metres >= 1000 ? String(format: "%.1f km", n.metres / 1000)
+                                  : "\(Int((n.metres / 10).rounded()) * 10) m"
+        let dir = Geo.compassEN[Geo.compassIndex(n.bearing)]
+        offArea.set(title: "You are outside Taito",
+                    body: "\(store.name(n.spot)) is \(km) to the \(dir). "
+                        + "Places to walk to thin out this far from the ward.")
+        offArea.isHidden = false
+        layoutOffArea()
     }
 
     private func roundButton(_ symbol: String, _ act: @escaping () -> Void) -> UIButton {
@@ -118,6 +157,31 @@ final class MapViewController: UIViewController {
         b.configuration = c
         b.addAction(UIAction { _ in act() }, for: .touchUpInside)
         return b
+    }
+}
+
+/// 区の外にいることを伝える帯。地図の上、シートのすぐ上に出す。
+final class OffAreaBanner: UIView {
+    private let titleLabel = makeLabel("", Theme.body(13, .semibold), .white)
+    private let bodyLabel = makeLabel("", Theme.body(11.5), UIColor.white.withAlphaComponent(0.8), lines: 0)
+
+    init() {
+        super.init(frame: .zero)
+        backgroundColor = Theme.busy.withAlphaComponent(0.94)
+        layer.cornerRadius = 12
+        layer.cornerCurve = .continuous
+        let icon = UIImageView(image: UIImage(systemName: "exclamationmark.triangle"))
+        icon.tintColor = .white
+        icon.setContentHuggingPriority(.required, for: .horizontal)
+        let col = stack(.vertical, 3, [titleLabel, bodyLabel])
+        let row = stack(.horizontal, 11, [icon, col], align: .top)
+        addSubview(row)
+        row.pin(to: self, insets: .init(top: 12, left: 13, bottom: 12, right: 13))
+    }
+    required init?(coder: NSCoder) { fatalError() }
+
+    func set(title: String, body: String) {
+        titleLabel.text = title; bodyLabel.text = body
     }
 }
 

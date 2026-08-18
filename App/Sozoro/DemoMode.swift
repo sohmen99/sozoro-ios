@@ -69,6 +69,12 @@ final class DemoPanel: UIView {
     }
     required init?(coder: NSCoder) { fatalError() }
 
+    /// 畳んだ状態。地図の邪魔をしないよう、既定では一行だけにしておく。
+    private(set) var expanded = false
+    private let body = UIStackView()
+    private let summary = makeLabel("", Theme.mono(11), Theme.mid)
+    private let chevron = UIImageView(image: UIImage(systemName: "chevron.down"))
+
     private func build() {
         let head = UILabel()
         head.attributedText = Theme.label("Demo — place and time are yours")
@@ -86,7 +92,7 @@ final class DemoPanel: UIView {
         daySeg.addAction(UIAction { [weak self] _ in
             guard let self else { return }
             self.demo.weekend = self.daySeg.selectedSegmentIndex == 1
-            self.onChange?()
+            self.sync(); self.onChange?()
         }, for: .valueChanged)
 
         speedSeg.selectedSegmentIndex = 2
@@ -94,6 +100,7 @@ final class DemoPanel: UIView {
         speedSeg.addAction(UIAction { [weak self] _ in
             guard let self else { return }
             self.demo.speed = [1.0, 10, 60][self.speedSeg.selectedSegmentIndex]
+            self.sync()
         }, for: .valueChanged)
 
         var c = UIButton.Configuration.plain()
@@ -111,17 +118,44 @@ final class DemoPanel: UIView {
         }, for: .touchUpInside)
 
         let hint = makeLabel("Tap the map to stand there.", Theme.body(10.5), Theme.mutedDark)
-        let col = stack(.vertical, 9, [
-            stack(.horizontal, 10, [head, UIView(), hourLabel], align: .center),
-            slider, daySeg, speedSeg, walkButton, hint
-        ])
+
+        body.axis = .vertical; body.spacing = 9
+        [slider, daySeg, speedSeg, walkButton, hint].forEach { body.addArrangedSubview($0) }
+
+        chevron.tintColor = Theme.mid
+        chevron.setContentHuggingPriority(.required, for: .horizontal)
+        let headRow = stack(.horizontal, 10, [head, UIView(), summary, chevron], align: .center)
+        headRow.isUserInteractionEnabled = true
+        headRow.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(toggle)))
+
+        let col = stack(.vertical, 9, [headRow, body])
         addSubview(col)
         col.pin(to: self, insets: .init(top: 12, left: 13, bottom: 12, right: 13))
+        setExpanded(false, animated: false)
         sync()
+    }
+
+    @objc private func toggle() { setExpanded(!expanded, animated: true) }
+
+    func setExpanded(_ on: Bool, animated: Bool) {
+        expanded = on
+        let apply = {
+            self.body.isHidden = !on
+            self.body.alpha = on ? 1 : 0
+            self.summary.isHidden = on
+            self.chevron.transform = CGAffineTransform(rotationAngle: on ? .pi : 0)
+        }
+        guard animated else { apply(); return }
+        UIView.animate(withDuration: 0.24, delay: 0, options: [.curveEaseOut]) {
+            apply()
+            self.superview?.layoutIfNeeded()
+        }
     }
 
     func sync() {
         let h = Int(demo.hour), m = Int((demo.hour - floor(demo.hour)) * 60)
         hourLabel.text = String(format: "%02d:%02d", h, m)
+        summary.text = String(format: "%02d:%02d · %@ · ×%.0f", h, m,
+                              demo.weekend ? "Weekend" : "Weekday", demo.speed)
     }
 }
