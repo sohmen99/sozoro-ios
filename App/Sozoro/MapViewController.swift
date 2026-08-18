@@ -59,7 +59,18 @@ final class MapViewController: UIViewController {
         }
         addMeMarker()
 
+        sheet.onBegin = { [weak self] in self?.onBegin?() }
+        sheet.onSlide = { [weak self] _ in self?.layoutOffArea() }
+        view.addSubview(sheet)
+        sheet.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            sheet.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
+            sheet.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
+            sheet.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 22)
+        ])
+
         // 端の凡例と縮尺。何色が混んでいるのか言わずに色で塗るのは、読めない図になる。
+        // シートの上端に合わせるので、シートを階層に入れたあとで張る。
         view.addSubview(foot)
         foot.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -71,16 +82,6 @@ final class MapViewController: UIViewController {
         view.addSubview(offArea)
         offArea.translatesAutoresizingMaskIntoConstraints = false
         offArea.isHidden = true
-
-        sheet.onBegin = { [weak self] in self?.onBegin?() }
-        sheet.onSlide = { [weak self] _ in self?.layoutOffArea() }
-        view.addSubview(sheet)
-        sheet.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            sheet.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
-            sheet.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
-            sheet.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 22)
-        ])
 
         let bar = stack(.horizontal, 8, [
             roundButton("chevron.left") { [weak self] in self?.onCover?() },
@@ -167,6 +168,8 @@ final class MapViewController: UIViewController {
     private let offArea = OffAreaBanner()
 
     private func layoutOffArea() {
+        // どちらも同じ親に入っていないと張れない。入る前に呼ばれたら何もしない。
+        guard offArea.superview === view, sheet.superview === view else { return }
         NSLayoutConstraint.deactivate(offAreaConstraints)
         offAreaConstraints = [
             offArea.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 14),

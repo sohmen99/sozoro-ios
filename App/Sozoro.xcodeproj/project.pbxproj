@@ -1,68 +1,83 @@
 // !$*UTF8*$!
 {
 	archiveVersion = 1;
-	classes = {};
-	objectVersion = 56;
+	classes = {
+	};
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C92044E95ED64485AF89FB8D /* ArrivalScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06BE313E017F4812A6BE8FA2 /* ArrivalScene.swift */; };
-		27B23537157A411480CEA891 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3DD59DFD5144B3ADDFA4F1 /* CompassView.swift */; };
-		8B3DECE29D3544AD94F65242 /* CoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7B8571FD1D743E0A38F1692 /* CoverViewController.swift */; };
-		3F4C72CAD2304C9E80D8CF1A /* DemoMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0D0DB1A584E4F43A7A9E690 /* DemoMode.swift */; };
-		AFB91DCA904E48BC97B0538E /* DetailScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 109D548AA8A34599B39170EE /* DetailScene.swift */; };
-		EA2557DE5FEC45CBA6D0C76F /* HeatOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66C9BCEAA4640AB9A1A4608 /* HeatOverlay.swift */; };
-		47A52E6863104123A37DA8E1 /* IconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AAE5B2F590F46C7AD743EEE /* IconView.swift */; };
-		72DC79FB96F2428495D49472 /* LandmarkDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA6D44700F7A426E844D8C9C /* LandmarkDetail.swift */; };
-		9DF744BACEF64E7C871FF5ED /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 220A60029F9D484481245684 /* LocationService.swift */; };
-		374172A181CE49AAA7A318D7 /* MapFoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B839D3098B495581C68295 /* MapFoot.swift */; };
-		647C0D1A467042A08BE84CB0 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C5B0B8FE626466FBC924105 /* MapViewController.swift */; };
-		108C9BF80F904739A8DEC4F7 /* PickViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116DCE20256D4DF89C7E9815 /* PickViewController.swift */; };
-		5F835C872908430D888BB839 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10650FF2F1FE4E44BEC74235 /* RootViewController.swift */; };
-		120D43CE63714040AEFEE6B5 /* ShareCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D159529048C044A783EF6AE5 /* ShareCard.swift */; };
-		D6996FFF202E49F386162E5B /* SheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1639F047FBE44BE9BCB804D /* SheetView.swift */; };
-		A533A1E5875D491C98A07669 /* SozoroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E261E153AAE47A182C2FCAD /* SozoroApp.swift */; };
-		39D8C50DF1F545E2ABBE5821 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B97F405AD36241088EE5B00D /* Theme.swift */; };
 		067C92CA1246400D86BEBAE2 /* WalkStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8F00A4C026B48CFBC66BEE0 /* WalkStore.swift */; };
+		108C9BF80F904739A8DEC4F7 /* PickViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116DCE20256D4DF89C7E9815 /* PickViewController.swift */; };
+		120D43CE63714040AEFEE6B5 /* ShareCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = D159529048C044A783EF6AE5 /* ShareCard.swift */; };
+		27B23537157A411480CEA891 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A3DD59DFD5144B3ADDFA4F1 /* CompassView.swift */; };
+		374172A181CE49AAA7A318D7 /* MapFoot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84B839D3098B495581C68295 /* MapFoot.swift */; };
+		39D8C50DF1F545E2ABBE5821 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B97F405AD36241088EE5B00D /* Theme.swift */; };
+		3F4C72CAD2304C9E80D8CF1A /* DemoMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0D0DB1A584E4F43A7A9E690 /* DemoMode.swift */; };
+		47A52E6863104123A37DA8E1 /* IconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AAE5B2F590F46C7AD743EEE /* IconView.swift */; };
+		5F835C872908430D888BB839 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10650FF2F1FE4E44BEC74235 /* RootViewController.swift */; };
+		647C0D1A467042A08BE84CB0 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C5B0B8FE626466FBC924105 /* MapViewController.swift */; };
+		72DC79FB96F2428495D49472 /* LandmarkDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA6D44700F7A426E844D8C9C /* LandmarkDetail.swift */; };
 		852250C4AADB44298FA70ADE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CC2E751D643F4DDAA724BDD8 /* Assets.xcassets */; };
+		8B3DECE29D3544AD94F65242 /* CoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7B8571FD1D743E0A38F1692 /* CoverViewController.swift */; };
 		8FB2789A8BBA4291B14DD1EC /* SozoroCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7FA685A03A8B4926868A6330 /* SozoroCore */; };
+		9DF744BACEF64E7C871FF5ED /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 220A60029F9D484481245684 /* LocationService.swift */; };
+		A533A1E5875D491C98A07669 /* SozoroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E261E153AAE47A182C2FCAD /* SozoroApp.swift */; };
+		AFB91DCA904E48BC97B0538E /* DetailScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 109D548AA8A34599B39170EE /* DetailScene.swift */; };
+		C92044E95ED64485AF89FB8D /* ArrivalScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06BE313E017F4812A6BE8FA2 /* ArrivalScene.swift */; };
+		D6996FFF202E49F386162E5B /* SheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1639F047FBE44BE9BCB804D /* SheetView.swift */; };
+		EA2557DE5FEC45CBA6D0C76F /* HeatOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66C9BCEAA4640AB9A1A4608 /* HeatOverlay.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		06BE313E017F4812A6BE8FA2 /* ArrivalScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ArrivalScene.swift"; sourceTree = "<group>"; };
-		5A3DD59DFD5144B3ADDFA4F1 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CompassView.swift"; sourceTree = "<group>"; };
-		A7B8571FD1D743E0A38F1692 /* CoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoverViewController.swift"; sourceTree = "<group>"; };
-		E0D0DB1A584E4F43A7A9E690 /* DemoMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DemoMode.swift"; sourceTree = "<group>"; };
-		109D548AA8A34599B39170EE /* DetailScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DetailScene.swift"; sourceTree = "<group>"; };
-		A66C9BCEAA4640AB9A1A4608 /* HeatOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HeatOverlay.swift"; sourceTree = "<group>"; };
-		7AAE5B2F590F46C7AD743EEE /* IconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IconView.swift"; sourceTree = "<group>"; };
-		EA6D44700F7A426E844D8C9C /* LandmarkDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LandmarkDetail.swift"; sourceTree = "<group>"; };
-		220A60029F9D484481245684 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LocationService.swift"; sourceTree = "<group>"; };
-		84B839D3098B495581C68295 /* MapFoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MapFoot.swift"; sourceTree = "<group>"; };
-		1C5B0B8FE626466FBC924105 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MapViewController.swift"; sourceTree = "<group>"; };
-		116DCE20256D4DF89C7E9815 /* PickViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PickViewController.swift"; sourceTree = "<group>"; };
-		10650FF2F1FE4E44BEC74235 /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RootViewController.swift"; sourceTree = "<group>"; };
-		D159529048C044A783EF6AE5 /* ShareCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ShareCard.swift"; sourceTree = "<group>"; };
-		F1639F047FBE44BE9BCB804D /* SheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SheetView.swift"; sourceTree = "<group>"; };
-		3E261E153AAE47A182C2FCAD /* SozoroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SozoroApp.swift"; sourceTree = "<group>"; };
-		B97F405AD36241088EE5B00D /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Theme.swift"; sourceTree = "<group>"; };
-		F8F00A4C026B48CFBC66BEE0 /* WalkStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WalkStore.swift"; sourceTree = "<group>"; };
-		CC2E751D643F4DDAA724BDD8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		06BE313E017F4812A6BE8FA2 /* ArrivalScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrivalScene.swift; sourceTree = "<group>"; };
+		10650FF2F1FE4E44BEC74235 /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
+		109D548AA8A34599B39170EE /* DetailScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailScene.swift; sourceTree = "<group>"; };
+		116DCE20256D4DF89C7E9815 /* PickViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickViewController.swift; sourceTree = "<group>"; };
+		1C5B0B8FE626466FBC924105 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
+		220A60029F9D484481245684 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
+		3E261E153AAE47A182C2FCAD /* SozoroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SozoroApp.swift; sourceTree = "<group>"; };
+		5A3DD59DFD5144B3ADDFA4F1 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
+		7AAE5B2F590F46C7AD743EEE /* IconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconView.swift; sourceTree = "<group>"; };
+		84B839D3098B495581C68295 /* MapFoot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapFoot.swift; sourceTree = "<group>"; };
 		9430AD5928ED4702A1B3362F /* Sozoro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sozoro.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A66C9BCEAA4640AB9A1A4608 /* HeatOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeatOverlay.swift; sourceTree = "<group>"; };
+		A7B8571FD1D743E0A38F1692 /* CoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverViewController.swift; sourceTree = "<group>"; };
+		B97F405AD36241088EE5B00D /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		CC2E751D643F4DDAA724BDD8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D159529048C044A783EF6AE5 /* ShareCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCard.swift; sourceTree = "<group>"; };
+		E0D0DB1A584E4F43A7A9E690 /* DemoMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMode.swift; sourceTree = "<group>"; };
+		EA6D44700F7A426E844D8C9C /* LandmarkDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandmarkDetail.swift; sourceTree = "<group>"; };
+		F1639F047FBE44BE9BCB804D /* SheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetView.swift; sourceTree = "<group>"; };
+		F8F00A4C026B48CFBC66BEE0 /* WalkStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		63FBE8A9BB61434A950BD921 = {
-			isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647;
-			files = ( 8FB2789A8BBA4291B14DD1EC /* SozoroCore in Frameworks */, );
+		63FBE8A9BB61434A950BD921 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8FB2789A8BBA4291B14DD1EC /* SozoroCore in Frameworks */,
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3134655DABBD4F55BD9F2BA3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9430AD5928ED4702A1B3362F /* Sozoro.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		7609805087F3453E8B72FEA8 = {
 			isa = PBXGroup;
-			children = ( A6604194CAEB40D0B1952484 /* Sozoro */, 3134655DABBD4F55BD9F2BA3 /* Products */, );
+			children = (
+				A6604194CAEB40D0B1952484 /* Sozoro */,
+				3134655DABBD4F55BD9F2BA3 /* Products */,
+			);
 			sourceTree = "<group>";
 		};
 		A6604194CAEB40D0B1952484 /* Sozoro */ = {
@@ -88,23 +103,30 @@
 				F8F00A4C026B48CFBC66BEE0 /* WalkStore.swift */,
 				CC2E751D643F4DDAA724BDD8 /* Assets.xcassets */,
 			);
-			path = Sozoro; sourceTree = "<group>";
-		};
-		3134655DABBD4F55BD9F2BA3 /* Products */ = {
-			isa = PBXGroup;
-			children = ( 9430AD5928ED4702A1B3362F /* Sozoro.app */, );
-			name = Products; sourceTree = "<group>";
+			path = Sozoro;
+			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
 		DD80B62B48A7497CA9ADA141 /* Sozoro */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 169C934751444075B6B6B69E;
-			buildPhases = ( 2DE7D2D7B1B24514A32F5DFE, 63FBE8A9BB61434A950BD921, 7C36ED640A36482DA13C4799, );
-			buildRules = (); dependencies = (); name = Sozoro;
-			packageProductDependencies = ( 7FA685A03A8B4926868A6330 /* SozoroCore */, );
-			productName = Sozoro; productReference = 9430AD5928ED4702A1B3362F /* Sozoro.app */;
+			buildConfigurationList = 169C934751444075B6B6B69E /* Build configuration list for PBXNativeTarget "Sozoro" */;
+			buildPhases = (
+				2DE7D2D7B1B24514A32F5DFE /* Sources */,
+				63FBE8A9BB61434A950BD921 /* Frameworks */,
+				7C36ED640A36482DA13C4799 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Sozoro;
+			packageProductDependencies = (
+				7FA685A03A8B4926868A6330 /* SozoroCore */,
+			);
+			productName = Sozoro;
+			productReference = 9430AD5928ED4702A1B3362F /* Sozoro.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -112,30 +134,52 @@
 /* Begin PBXProject section */
 		E2BE7A102B8645918168200F /* Project object */ = {
 			isa = PBXProject;
-			attributes = { BuildIndependentTargetsInParallel = 1; LastUpgradeCheck = 1600;
-				TargetAttributes = { DD80B62B48A7497CA9ADA141 = { CreatedOnToolsVersion = 16.0; }; }; };
-			buildConfigurationList = F5F2A727C2A6466A930F9333;
-			compatibilityVersion = "Xcode 14.0"; developmentRegion = en;
-			hasScannedForEncodings = 0; knownRegions = ( en, Base, ja );
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					DD80B62B48A7497CA9ADA141 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = F5F2A727C2A6466A930F9333 /* Build configuration list for PBXProject "Sozoro" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				ja,
+			);
 			mainGroup = 7609805087F3453E8B72FEA8;
-			packageReferences = ( CA58BDBB26474E22BDC9154C /* XCLocalSwiftPackageReference ".." */, );
+			packageReferences = (
+				CA58BDBB26474E22BDC9154C /* XCLocalSwiftPackageReference ".." */,
+			);
 			productRefGroup = 3134655DABBD4F55BD9F2BA3 /* Products */;
-			projectDirPath = ""; projectRoot = "";
-			targets = ( DD80B62B48A7497CA9ADA141 /* Sozoro */, );
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DD80B62B48A7497CA9ADA141 /* Sozoro */,
+			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		7C36ED640A36482DA13C4799 = {
-			isa = PBXResourcesBuildPhase; buildActionMask = 2147483647;
-			files = ( 852250C4AADB44298FA70ADE /* Assets.xcassets in Resources */, );
+		7C36ED640A36482DA13C4799 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				852250C4AADB44298FA70ADE /* Assets.xcassets in Resources */,
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		2DE7D2D7B1B24514A32F5DFE = {
-			isa = PBXSourcesBuildPhase; buildActionMask = 2147483647;
+		2DE7D2D7B1B24514A32F5DFE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
 			files = (
 				C92044E95ED64485AF89FB8D /* ArrivalScene.swift in Sources */,
 				27B23537157A411480CEA891 /* CompassView.swift in Sources */,
@@ -161,50 +205,21 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		C1A138ED6D574350AB0C82A5 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES;
-				ENABLE_STRICT_OBJC_MSGSEND = YES; GCC_NO_COMMON_BLOCKS = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0; ONLY_ACTIVE_ARCH = YES; SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_VERSION = 5.0;
-				DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_TESTABILITY = YES; GCC_OPTIMIZATION_LEVEL = 0;
-			};
-			name = Debug;
-		};
 		1947178075C04A079831079D /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES;
-				ENABLE_STRICT_OBJC_MSGSEND = YES; GCC_NO_COMMON_BLOCKS = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0; SDKROOT = iphoneos;
-				SWIFT_COMPILATION_MODE = wholemodule; SWIFT_VERSION = 5.0;
-				VALIDATE_PRODUCT = YES; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
-		};
-		F3650E00C4334AF68736886B /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Sozoro needs your position to work out where to send you, and how far you still have to walk.";
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				INFOPLIST_KEY_CFBundleDisplayName = Sozoro;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
-				LD_RUNPATH_SEARCH_PATHS = ( "$(inherited)", "@executable_path/Frameworks" );
-				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "dev.sozoro.app";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Debug;
 		};
 		6DB63AEA05104A0A9CEF457C /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -212,15 +227,19 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3634A55J33;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Sozoro;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Sozoro needs your position to work out where to send you, and how far you still have to walk.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				INFOPLIST_KEY_CFBundleDisplayName = Sozoro;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
-				LD_RUNPATH_SEARCH_PATHS = ( "$(inherited)", "@executable_path/Frameworks" );
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "dev.sozoro.app";
+				PRODUCT_BUNDLE_IDENTIFIER = dev.sozoro.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -228,30 +247,85 @@
 			};
 			name = Release;
 		};
+		C1A138ED6D574350AB0C82A5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F3650E00C4334AF68736886B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3634A55J33;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Sozoro;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Sozoro needs your position to work out where to send you, and how far you still have to walk.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.sozoro.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		F5F2A727C2A6466A930F9333 = {
+		169C934751444075B6B6B69E /* Build configuration list for PBXNativeTarget "Sozoro" */ = {
 			isa = XCConfigurationList;
-			buildConfigurations = ( C1A138ED6D574350AB0C82A5 /* Debug */, 1947178075C04A079831079D /* Release */, );
-			defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;
+			buildConfigurations = (
+				F3650E00C4334AF68736886B /* Debug */,
+				6DB63AEA05104A0A9CEF457C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
-		169C934751444075B6B6B69E = {
+		F5F2A727C2A6466A930F9333 /* Build configuration list for PBXProject "Sozoro" */ = {
 			isa = XCConfigurationList;
-			buildConfigurations = ( F3650E00C4334AF68736886B /* Debug */, 6DB63AEA05104A0A9CEF457C /* Release */, );
-			defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;
+			buildConfigurations = (
+				C1A138ED6D574350AB0C82A5 /* Debug */,
+				1947178075C04A079831079D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
 		CA58BDBB26474E22BDC9154C /* XCLocalSwiftPackageReference ".." */ = {
-			isa = XCLocalSwiftPackageReference; relativePath = ..;
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		7FA685A03A8B4926868A6330 /* SozoroCore */ = {
-			isa = XCSwiftPackageProductDependency; productName = SozoroCore;
+			isa = XCSwiftPackageProductDependency;
+			productName = SozoroCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
