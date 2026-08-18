@@ -1,305 +1,239 @@
 // !$*UTF8*$!
 {
 	archiveVersion = 1;
-	classes = {
-	};
-	objectVersion = 60;
+	classes = {};
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		33AF212879224F408414D2F7 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0965F4AE442421C93DDBA87 /* Theme.swift */; };
-		5FD513F18BC041E7B15A1B44 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B518A3A2F8246B188E6C9F2 /* MapViewController.swift */; };
-		7804DD314DE94D96841B60D3 /* PickViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E318D2F2690C4BEABEF8B6E0 /* PickViewController.swift */; };
-		7A2F172BF6D34EC5AA24D966 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9ADE05139F1A4FB8A0804E85 /* CompassView.swift */; };
-		7C9A89E68BFA41A1B8CD11B6 /* DemoMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5DD82DC93F402C9D7AEB0A /* DemoMode.swift */; };
-		9725DEBCEBDF43D0B7BB3B79 /* SozoroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03392AB38C8E4B80807D8AA2 /* SozoroApp.swift */; };
-		97ED793507924FEEBF085CAA /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98FC9B473E884190A72FD532 /* LocationService.swift */; };
-		B1781FAA72D245D784AE2186 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A50A435674314107A3E812A5 /* RootViewController.swift */; };
-		BB79A8F071364746AB33A266 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DCC6693A268540CEAED0DA08 /* Assets.xcassets */; };
-		D8703FCA98CC402ABA455CF1 /* SheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D5E4F9929CD49588FA51AE8 /* SheetView.swift */; };
-		DE439B728CC04EF3AC69633C /* SozoroCore in Frameworks */ = {isa = PBXBuildFile; productRef = B387CF39B32240C38C3CF5E3 /* SozoroCore */; };
-		F93CC02F9B91413FB050A89E /* WalkStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25305AD1EC2A48C885BDC4C6 /* WalkStore.swift */; };
-		F97B54F12DDD4FBEBE986540 /* CoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AA3DC7C280E4B2198912891 /* CoverViewController.swift */; };
+		FBF2C4F1452C4D3AA5CEB4B0 /* CompassView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E287693F7B9D4B78915F0990 /* CompassView.swift */; };
+		74DCC5400C8443FCBAF76319 /* CoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F41F2B6B1CED4CB8834413E1 /* CoverViewController.swift */; };
+		574E1FEEDDEB415DB4FCD0B5 /* DemoMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9EF22502E39478EAFA0C2AA /* DemoMode.swift */; };
+		6F3CD78347DF4C9EB4B0D223 /* IconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4A7891883E54A8DA9562A75 /* IconView.swift */; };
+		53A17E99797E424D83BE51E6 /* LandmarkDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 151FDBAD868D46AA925C01ED /* LandmarkDetail.swift */; };
+		91923157B69347DB80D74C91 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CCFA45D932F4BC1BD653932 /* LocationService.swift */; };
+		CC77E29481F94B0383844F4C /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18952FE96E7D4C8685A3D0A8 /* MapViewController.swift */; };
+		C7E9C7A34F9647B69F54B460 /* PickViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6996F4B5EB964AD2BDA241B3 /* PickViewController.swift */; };
+		381E3835A7014A189F22AAB9 /* RootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2401379EE86D4B84B4A1E261 /* RootViewController.swift */; };
+		CA6263798D144234ADC41AC8 /* SheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6946F3649DB146A08E5F183D /* SheetView.swift */; };
+		186AB753FA004A51BF4491DC /* SozoroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B003C80112524219A7551CEB /* SozoroApp.swift */; };
+		7BB84920AB544D01B2493ECC /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA91F2BA83A46F8B59A9A56 /* Theme.swift */; };
+		A39A0E3BBADF41CE8B80E952 /* WalkStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 215AE8A101CF404E9367AB36 /* WalkStore.swift */; };
+		87344B4BF1734A08ADB59000 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52DB9926C5254C4780EE896F /* Assets.xcassets */; };
+		C4D6DCD28A924EFA861D50A2 /* SozoroCore in Frameworks */ = {isa = PBXBuildFile; productRef = FEEA8177C8634D018977C922 /* SozoroCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		03392AB38C8E4B80807D8AA2 /* SozoroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SozoroApp.swift; sourceTree = "<group>"; };
-		0AA3DC7C280E4B2198912891 /* CoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverViewController.swift; sourceTree = "<group>"; };
-		25305AD1EC2A48C885BDC4C6 /* WalkStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkStore.swift; sourceTree = "<group>"; };
-		2B518A3A2F8246B188E6C9F2 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
-		8841D9A9959B47AAA32051D7 /* Sozoro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sozoro.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		8D5E4F9929CD49588FA51AE8 /* SheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetView.swift; sourceTree = "<group>"; };
-		98FC9B473E884190A72FD532 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
-		9ADE05139F1A4FB8A0804E85 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompassView.swift; sourceTree = "<group>"; };
-		A0965F4AE442421C93DDBA87 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		A50A435674314107A3E812A5 /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewController.swift; sourceTree = "<group>"; };
-		DCC6693A268540CEAED0DA08 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		E318D2F2690C4BEABEF8B6E0 /* PickViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PickViewController.swift; sourceTree = "<group>"; };
-		FB5DD82DC93F402C9D7AEB0A /* DemoMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoMode.swift; sourceTree = "<group>"; };
+		E287693F7B9D4B78915F0990 /* CompassView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CompassView.swift"; sourceTree = "<group>"; };
+		F41F2B6B1CED4CB8834413E1 /* CoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CoverViewController.swift"; sourceTree = "<group>"; };
+		B9EF22502E39478EAFA0C2AA /* DemoMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DemoMode.swift"; sourceTree = "<group>"; };
+		F4A7891883E54A8DA9562A75 /* IconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "IconView.swift"; sourceTree = "<group>"; };
+		151FDBAD868D46AA925C01ED /* LandmarkDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LandmarkDetail.swift"; sourceTree = "<group>"; };
+		5CCFA45D932F4BC1BD653932 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LocationService.swift"; sourceTree = "<group>"; };
+		18952FE96E7D4C8685A3D0A8 /* MapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MapViewController.swift"; sourceTree = "<group>"; };
+		6996F4B5EB964AD2BDA241B3 /* PickViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PickViewController.swift"; sourceTree = "<group>"; };
+		2401379EE86D4B84B4A1E261 /* RootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RootViewController.swift"; sourceTree = "<group>"; };
+		6946F3649DB146A08E5F183D /* SheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SheetView.swift"; sourceTree = "<group>"; };
+		B003C80112524219A7551CEB /* SozoroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SozoroApp.swift"; sourceTree = "<group>"; };
+		BBA91F2BA83A46F8B59A9A56 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Theme.swift"; sourceTree = "<group>"; };
+		215AE8A101CF404E9367AB36 /* WalkStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WalkStore.swift"; sourceTree = "<group>"; };
+		52DB9926C5254C4780EE896F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		674D8258D096449EAC4633EB /* Sozoro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sozoro.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		63436CA654B44687B0A290B7 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DE439B728CC04EF3AC69633C /* SozoroCore in Frameworks */,
-			);
+		A4D2326696D84A49B0794524 = {
+			isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647;
+			files = ( C4D6DCD28A924EFA861D50A2 /* SozoroCore in Frameworks */, );
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		1707FC4F70DD4B2BAD5D29DF /* Products */ = {
+		51723F30843C4E47875DDA4C = {
 			isa = PBXGroup;
-			children = (
-				8841D9A9959B47AAA32051D7 /* Sozoro.app */,
-			);
-			name = Products;
+			children = ( FFAFCA2CD807445783BD50BB /* Sozoro */, FD1393063AD84578B3CED39B /* Products */, );
 			sourceTree = "<group>";
 		};
-		A200B5D3921E4EAEA6401DA5 = {
+		FFAFCA2CD807445783BD50BB /* Sozoro */ = {
 			isa = PBXGroup;
 			children = (
-				CBEA2F05CF0C4266BC6259AF /* Sozoro */,
-				1707FC4F70DD4B2BAD5D29DF /* Products */,
+				E287693F7B9D4B78915F0990 /* CompassView.swift */,
+				F41F2B6B1CED4CB8834413E1 /* CoverViewController.swift */,
+				B9EF22502E39478EAFA0C2AA /* DemoMode.swift */,
+				F4A7891883E54A8DA9562A75 /* IconView.swift */,
+				151FDBAD868D46AA925C01ED /* LandmarkDetail.swift */,
+				5CCFA45D932F4BC1BD653932 /* LocationService.swift */,
+				18952FE96E7D4C8685A3D0A8 /* MapViewController.swift */,
+				6996F4B5EB964AD2BDA241B3 /* PickViewController.swift */,
+				2401379EE86D4B84B4A1E261 /* RootViewController.swift */,
+				6946F3649DB146A08E5F183D /* SheetView.swift */,
+				B003C80112524219A7551CEB /* SozoroApp.swift */,
+				BBA91F2BA83A46F8B59A9A56 /* Theme.swift */,
+				215AE8A101CF404E9367AB36 /* WalkStore.swift */,
+				52DB9926C5254C4780EE896F /* Assets.xcassets */,
 			);
-			sourceTree = "<group>";
+			path = Sozoro; sourceTree = "<group>";
 		};
-		CBEA2F05CF0C4266BC6259AF /* Sozoro */ = {
+		FD1393063AD84578B3CED39B /* Products */ = {
 			isa = PBXGroup;
-			children = (
-				9ADE05139F1A4FB8A0804E85 /* CompassView.swift */,
-				0AA3DC7C280E4B2198912891 /* CoverViewController.swift */,
-				FB5DD82DC93F402C9D7AEB0A /* DemoMode.swift */,
-				98FC9B473E884190A72FD532 /* LocationService.swift */,
-				2B518A3A2F8246B188E6C9F2 /* MapViewController.swift */,
-				E318D2F2690C4BEABEF8B6E0 /* PickViewController.swift */,
-				A50A435674314107A3E812A5 /* RootViewController.swift */,
-				8D5E4F9929CD49588FA51AE8 /* SheetView.swift */,
-				03392AB38C8E4B80807D8AA2 /* SozoroApp.swift */,
-				A0965F4AE442421C93DDBA87 /* Theme.swift */,
-				25305AD1EC2A48C885BDC4C6 /* WalkStore.swift */,
-				DCC6693A268540CEAED0DA08 /* Assets.xcassets */,
-			);
-			path = Sozoro;
-			sourceTree = "<group>";
+			children = ( 674D8258D096449EAC4633EB /* Sozoro.app */, );
+			name = Products; sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		FB182D90C989452197399DB9 /* Sozoro */ = {
+		F55DE56B59794BD5985C56C2 /* Sozoro */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F65CED379C9B4790898F62D5 /* Build configuration list for PBXNativeTarget "Sozoro" */;
-			buildPhases = (
-				E04CE9F67E2C41788E6BFC0E /* Sources */,
-				63436CA654B44687B0A290B7 /* Frameworks */,
-				1AAA8F390CBF4A5D9691EB76 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = Sozoro;
-			packageProductDependencies = (
-				B387CF39B32240C38C3CF5E3 /* SozoroCore */,
-			);
-			productName = Sozoro;
-			productReference = 8841D9A9959B47AAA32051D7 /* Sozoro.app */;
+			buildConfigurationList = 476AA42C84CA43C6B4B90EAF;
+			buildPhases = ( E49F6D755B454760B5F3E83F, A4D2326696D84A49B0794524, 3469BC37114B4D13800C5D07, );
+			buildRules = (); dependencies = (); name = Sozoro;
+			packageProductDependencies = ( FEEA8177C8634D018977C922 /* SozoroCore */, );
+			productName = Sozoro; productReference = 674D8258D096449EAC4633EB /* Sozoro.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		412538F6D7C94A9FAB0FE3A3 /* Project object */ = {
+		099C30DC8D944C0994135536 /* Project object */ = {
 			isa = PBXProject;
-			attributes = {
-				BuildIndependentTargetsInParallel = 1;
-				LastUpgradeCheck = 1600;
-				TargetAttributes = {
-					FB182D90C989452197399DB9 = {
-						CreatedOnToolsVersion = 16.0;
-					};
-				};
-			};
-			buildConfigurationList = 3E6969CFAAB34C7D99A421FB /* Build configuration list for PBXProject "Sozoro" */;
-			compatibilityVersion = "Xcode 14.0";
-			developmentRegion = en;
-			hasScannedForEncodings = 0;
-			knownRegions = (
-				en,
-				Base,
-				ja,
-			);
-			mainGroup = A200B5D3921E4EAEA6401DA5;
-			packageReferences = (
-				D77A6CCD7D994863A4260230 /* XCLocalSwiftPackageReference ".." */,
-			);
-			productRefGroup = 1707FC4F70DD4B2BAD5D29DF /* Products */;
-			projectDirPath = "";
-			projectRoot = "";
-			targets = (
-				FB182D90C989452197399DB9 /* Sozoro */,
-			);
+			attributes = { BuildIndependentTargetsInParallel = 1; LastUpgradeCheck = 1600;
+				TargetAttributes = { F55DE56B59794BD5985C56C2 = { CreatedOnToolsVersion = 16.0; }; }; };
+			buildConfigurationList = 2993CA33418B49D4A2FBC198;
+			compatibilityVersion = "Xcode 14.0"; developmentRegion = en;
+			hasScannedForEncodings = 0; knownRegions = ( en, Base, ja );
+			mainGroup = 51723F30843C4E47875DDA4C;
+			packageReferences = ( 5AF0484C41464D319F1F51F0 /* XCLocalSwiftPackageReference ".." */, );
+			productRefGroup = FD1393063AD84578B3CED39B /* Products */;
+			projectDirPath = ""; projectRoot = "";
+			targets = ( F55DE56B59794BD5985C56C2 /* Sozoro */, );
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		1AAA8F390CBF4A5D9691EB76 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				BB79A8F071364746AB33A266 /* Assets.xcassets in Resources */,
-			);
+		3469BC37114B4D13800C5D07 = {
+			isa = PBXResourcesBuildPhase; buildActionMask = 2147483647;
+			files = ( 87344B4BF1734A08ADB59000 /* Assets.xcassets in Resources */, );
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		E04CE9F67E2C41788E6BFC0E /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
+		E49F6D755B454760B5F3E83F = {
+			isa = PBXSourcesBuildPhase; buildActionMask = 2147483647;
 			files = (
-				7A2F172BF6D34EC5AA24D966 /* CompassView.swift in Sources */,
-				F97B54F12DDD4FBEBE986540 /* CoverViewController.swift in Sources */,
-				7C9A89E68BFA41A1B8CD11B6 /* DemoMode.swift in Sources */,
-				97ED793507924FEEBF085CAA /* LocationService.swift in Sources */,
-				5FD513F18BC041E7B15A1B44 /* MapViewController.swift in Sources */,
-				7804DD314DE94D96841B60D3 /* PickViewController.swift in Sources */,
-				B1781FAA72D245D784AE2186 /* RootViewController.swift in Sources */,
-				D8703FCA98CC402ABA455CF1 /* SheetView.swift in Sources */,
-				9725DEBCEBDF43D0B7BB3B79 /* SozoroApp.swift in Sources */,
-				33AF212879224F408414D2F7 /* Theme.swift in Sources */,
-				F93CC02F9B91413FB050A89E /* WalkStore.swift in Sources */,
+				FBF2C4F1452C4D3AA5CEB4B0 /* CompassView.swift in Sources */,
+				74DCC5400C8443FCBAF76319 /* CoverViewController.swift in Sources */,
+				574E1FEEDDEB415DB4FCD0B5 /* DemoMode.swift in Sources */,
+				6F3CD78347DF4C9EB4B0D223 /* IconView.swift in Sources */,
+				53A17E99797E424D83BE51E6 /* LandmarkDetail.swift in Sources */,
+				91923157B69347DB80D74C91 /* LocationService.swift in Sources */,
+				CC77E29481F94B0383844F4C /* MapViewController.swift in Sources */,
+				C7E9C7A34F9647B69F54B460 /* PickViewController.swift in Sources */,
+				381E3835A7014A189F22AAB9 /* RootViewController.swift in Sources */,
+				CA6263798D144234ADC41AC8 /* SheetView.swift in Sources */,
+				186AB753FA004A51BF4491DC /* SozoroApp.swift in Sources */,
+				7BB84920AB544D01B2493ECC /* Theme.swift in Sources */,
+				A39A0E3BBADF41CE8B80E952 /* WalkStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		3D586FF8193C49C8AFB361DE /* Release */ = {
+		413F0291CC8B4DB1B318BCE2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ENABLE_MODULES = YES;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_NO_COMMON_BLOCKS = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				SDKROOT = iphoneos;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_VERSION = 5.0;
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		B38001A5CE1249EFAF481FC1 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 3634A55J33;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Sozoro;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Sozoro needs your position to work out where to send you, and how far you still have to walk.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.sozoro.app;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Debug;
-		};
-		C8422E6016FA4F4BAC6A6EE3 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 3634A55J33;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Sozoro;
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Sozoro needs your position to work out where to send you, and how far you still have to walk.";
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 0.1;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.sozoro.app;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Release;
-		};
-		CD3DBFBA485C4E5E9A46DBDB /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ENABLE_MODULES = YES;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_TESTABILITY = YES;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = iphoneos;
+				ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES; GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0; ONLY_ACTIVE_ARCH = YES; SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_VERSION = 5.0;
+				DEBUG_INFORMATION_FORMAT = dwarf; ENABLE_TESTABILITY = YES; GCC_OPTIMIZATION_LEVEL = 0;
 			};
 			name = Debug;
+		};
+		F600F64207C24A128A088D6F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO; CLANG_ENABLE_MODULES = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES; GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0; SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule; SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+			};
+			name = Release;
+		};
+		138786377B8A4C6D8ACE7A50 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Sozoro needs your position to work out where to send you, and how far you still have to walk.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_CFBundleDisplayName = Sozoro;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
+				LD_RUNPATH_SEARCH_PATHS = ( "$(inherited)", "@executable_path/Frameworks" );
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.sozoro.app";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		F94605FC508D4277A577EDF8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Sozoro needs your position to work out where to send you, and how far you still have to walk.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_CFBundleDisplayName = Sozoro;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = NO;
+				LD_RUNPATH_SEARCH_PATHS = ( "$(inherited)", "@executable_path/Frameworks" );
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.sozoro.app";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		3E6969CFAAB34C7D99A421FB /* Build configuration list for PBXProject "Sozoro" */ = {
+		2993CA33418B49D4A2FBC198 = {
 			isa = XCConfigurationList;
-			buildConfigurations = (
-				CD3DBFBA485C4E5E9A46DBDB /* Debug */,
-				3D586FF8193C49C8AFB361DE /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			buildConfigurations = ( 413F0291CC8B4DB1B318BCE2 /* Debug */, F600F64207C24A128A088D6F /* Release */, );
+			defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;
 		};
-		F65CED379C9B4790898F62D5 /* Build configuration list for PBXNativeTarget "Sozoro" */ = {
+		476AA42C84CA43C6B4B90EAF = {
 			isa = XCConfigurationList;
-			buildConfigurations = (
-				B38001A5CE1249EFAF481FC1 /* Debug */,
-				C8422E6016FA4F4BAC6A6EE3 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			buildConfigurations = ( 138786377B8A4C6D8ACE7A50 /* Debug */, F94605FC508D4277A577EDF8 /* Release */, );
+			defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		D77A6CCD7D994863A4260230 /* XCLocalSwiftPackageReference ".." */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ..;
+		5AF0484C41464D319F1F51F0 /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference; relativePath = ..;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		B387CF39B32240C38C3CF5E3 /* SozoroCore */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = SozoroCore;
+		FEEA8177C8634D018977C922 /* SozoroCore */ = {
+			isa = XCSwiftPackageProductDependency; productName = SozoroCore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
-	rootObject = 412538F6D7C94A9FAB0FE3A3 /* Project object */;
+	rootObject = 099C30DC8D944C0994135536 /* Project object */;
 }

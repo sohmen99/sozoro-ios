@@ -9,6 +9,16 @@ final class CoverViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = Theme.sumi
 
+        let wave = WaveView()
+        view.addSubview(wave)
+        wave.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            wave.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            wave.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            wave.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            wave.heightAnchor.constraint(equalToConstant: 340)
+        ])
+
         let mark = UILabel()
         mark.attributedText = NSAttributedString(string: "TOKYO SOZORO", attributes: [
             .font: Theme.mono(12, .semibold), .kern: 3.4, .foregroundColor: Theme.aiLight])
@@ -127,5 +137,42 @@ final class RewardsViewController: UIViewController {
         box.layer.borderColor = (got ? Theme.quietDk.withAlphaComponent(0.35)
                                      : Theme.hairlineDk).cgColor
         return box
+    }
+}
+
+/// 表紙の波。ウェブ版の cover-wave と同じ、重ねた弧。
+/// 隅田川と、そこへ向かって歩く感じ。文字の後ろに薄く敷く。
+final class WaveView: UIView {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = .clear
+        isUserInteractionEnabled = false
+    }
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func draw(_ rect: CGRect) {
+        guard let ctx = UIGraphicsGetCurrentContext() else { return }
+        let rows: [(CGFloat, CGFloat, CGFloat)] = [   // y の割合, 振幅, 濃さ
+            (0.26, 16, 0.05), (0.40, 20, 0.07), (0.54, 24, 0.09),
+            (0.68, 28, 0.11), (0.82, 32, 0.13), (0.95, 36, 0.16)
+        ]
+        for (fy, amp, alpha) in rows {
+            let y = rect.height * fy
+            let p = UIBezierPath()
+            p.move(to: CGPoint(x: -20, y: y))
+            var x: CGFloat = -20
+            var up = true
+            while x < rect.width + 40 {
+                let nx = x + rect.width / 3.2
+                p.addQuadCurve(to: CGPoint(x: nx, y: y),
+                               controlPoint: CGPoint(x: x + rect.width / 6.4,
+                                                     y: y + (up ? -amp : amp)))
+                x = nx; up.toggle()
+            }
+            ctx.setStrokeColor(Theme.aiLight.withAlphaComponent(alpha).cgColor)
+            ctx.setLineWidth(1.4)
+            ctx.addPath(p.cgPath)
+            ctx.strokePath()
+        }
     }
 }

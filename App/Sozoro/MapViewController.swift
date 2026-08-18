@@ -37,7 +37,19 @@ final class MapViewController: UIViewController {
         map.delegate = self
         view.addSubview(map)
         map.pin(to: view)
-        map.addAnnotations(store.landmarks.map { CrowdPin(spot: $0, crowd: store.crowdLevel($0)) })
+        // 基準地点はウェブ版と同じ21件。アイコンと混み具合の色で置く。
+        map.addAnnotations(Landmark.all.map {
+            LandmarkPin(landmark: $0, crowd: store.crowd.level($0.asSpot, at: store.clock()))
+        })
+
+        // 遊べる範囲のちょい外までで止める。世界地図まで引けると、迷子になる。
+        let play = MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 35.7180, longitude: 139.7880),
+            latitudinalMeters: 9000, longitudinalMeters: 9000)
+        map.setCameraBoundary(MKMapView.CameraBoundary(coordinateRegion: play), animated: false)
+        map.setCameraZoomRange(MKMapView.CameraZoomRange(minCenterCoordinateDistance: 900,
+                                                        maxCenterCoordinateDistance: 14000),
+                               animated: false)
         if demo.on {
             // デモでは地図を叩いた場所に立つ。実測は起こさない。
             let tap = UITapGestureRecognizer(target: self, action: #selector(tapped(_:)))
@@ -91,6 +103,7 @@ final class MapViewController: UIViewController {
         refreshOffArea()
     }
 
+    private var detail: LandmarkDetailView?
     private var meMarker: MKPointAnnotation?
     private func addMeMarker() {
         guard demo.on, let h = store.here else { return }
@@ -185,32 +198,73 @@ final class OffAreaBanner: UIView {
     }
 }
 
-final class CrowdPin: NSObject, MKAnnotation {
+final class LandmarkPin: NSObject, MKAnnotation {
     let coordinate: CLLocationCoordinate2D
     let title: String?
+    let landmark: Landmark
     let crowd: Int
-    init(spot: Spot, crowd: Int) {
-        coordinate = CLLocationCoordinate2D(latitude: spot.coordinate.lat,
-                                            longitude: spot.coordinate.lon)
-        title = nil            // 名前は出さない。行き先を示唆しないため。
-        self.crowd = crowd
+    init(landmark: Landmark, crowd: Int) {
+        coordinate = CLLocationCoordinate2D(latitude: landmark.lat, longitude: landmark.lon)
+        title = nil            // 吹き出しは使わない。自前の詳細を出す。
+        self.landmark = landmark; self.crowd = crowd
     }
 }
 
 extension MapViewController: MKMapViewDelegate {
     func mapView(_ m: MKMapView, viewFor a: MKAnnotation) -> MKAnnotationView? {
-        guard let p = a as? CrowdPin else { return nil }
-        let id = "crowd"
-        let v = m.dequeueReusableAnnotationView(withIdentifier: id)
-            ?? MKAnnotationView(annotation: a, reuseIdentifier: id)
-        v.annotation = a
-        v.frame = CGRect(x: 0, y: 0, width: 11, height: 11)
-        v.backgroundColor = Theme.crowdColour(p.crowd)
-        v.layer.cornerRadius = 5.5
-        v.layer.borderWidth = 1.4
-        v.layer.borderColor = UIColor.white.withAlphaComponent(0.9).cgColor
-        v.canShowCallout = false
-        return v
+        if let p = a as? LandmarkPin {
+            let id = "landmark"
+            let v = m.dequeueReusableAnnotationView(withIdentifier: id)
+                ?? MKAnnotationView(annotation: a, reuseIdentifier: id)
+            v.annotation = a
+            v.canShowCallout = false
+            v.subviews.forEach { $0.removeFromSuperview() }
+            v.frame = CGRect(x: 0, y: 0, width: 34, height: 34)
+            v.backgroundColor = Theme.washi
+            v.layer.cornerRadius = 17
+            v.layer.borderWidth = 2
+            v.layer.borderColor = Theme.crowdColour(p.crowd).cgColor
+            v.layer.shadowColor = UIColor.black.cgColor
+            v.layer.shadowOpacity = 0.18
+            v.layer.shadowRadius = 3
+            v.layer.shadowOffset = CGSize(width: 0, height: 1)
+            let icon = IconView(p.landmark.icon, size: 18, colour: Theme.ink)
+            icon.center = CGPoint(x: 17, y: 17)
+            icon.translatesAutoresizingMaskIntoConstraints = true
+            v.addSubview(icon)
+            return v
+        }
+        return nil
+    }
+
+    /// 叩いたら詳細を出す。行き先ではなく、混雑の説明。
+    func mapView(_ m: MKMapView, didSelect v: MKAnnotationView) {
+        guard let p = v.annotation as? LandmarkPin else { return }
+        m.deselectAnnotation(v.annotation, animated: false)
+        showDetail(p.landmark)
+    }
+
+    func showDetail(_ l: Landmark) {
+        detail?.removeFromSuperview()
+        let d = LandmarkDetailView(landmark: l, crowd: store.crowd, now: store.clock())
+        d.onClose = { [weak self] in
+            UIView.animate(withDuration: 0.2) { self?.detail?.alpha = 0 } completion: { _ in
+                self?.detail?.removeFromSuperview(); self?.detail = nil
+            }
+        }
+        view.addSubview(d)
+        d.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            d.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
+            d.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12),
+            d.bottomAnchor.constraint(equalTo: sheet.topAnchor, constant: -10)
+        ])
+        d.alpha = 0
+        d.transform = CGAffineTransform(translationX: 0, y: 14)
+        UIView.animate(withDuration: 0.24, delay: 0, options: [.curveEaseOut]) {
+            d.alpha = 1; d.transform = .identity
+        }
+        detail = d
     }
 }
 
