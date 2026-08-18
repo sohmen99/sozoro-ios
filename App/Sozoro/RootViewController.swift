@@ -9,7 +9,7 @@ import SwiftUI
 /// 表紙 → 地図 → 三択 → コンパス → 到着 → 印 の行き来。
 @MainActor
 final class RootViewController: UIViewController {
-    enum Screen { case cover, map, directions, picks, compass, arrival, rewards }
+    enum Screen { case cover, guide, map, directions, picks, compass, arrival, rewards }
 
     let store: WalkStore
     let demo: DemoMode
@@ -31,6 +31,7 @@ final class RootViewController: UIViewController {
            i + 1 < CommandLine.arguments.count {
             switch CommandLine.arguments[i + 1] {
             case "map":     start = .map
+            case "guide":   start = .guide
             case "dirs":    start = .directions
             case "picks":   start = .picks
             case "compass": start = .compass
@@ -132,9 +133,14 @@ final class RootViewController: UIViewController {
 
     private func make(_ s: Screen) -> UIViewController {
         switch s {
+        case .guide:
+            // 表紙と地図のあいだに毎回1枚。記号だけのボタンを説明する。
+            let g = GuideViewController(store: store)
+            g.onContinue = { [weak self] in self?.show(.map) }
+            return g
         case .cover:
             let c = CoverViewController(store: store)
-            c.onStart = { [weak self] in self?.show(.map) }
+            c.onStart = { [weak self] in self?.show(.guide) }
             c.onLang = { [weak self] l in
                 self?.store.lang = l
                 self?.show(.cover, animated: false)     // 言語は全画面に効く

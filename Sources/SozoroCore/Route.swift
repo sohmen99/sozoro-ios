@@ -18,6 +18,8 @@ public struct Route: Sendable {
         public let station: Spot
         public let metres: Double
         public let minutes: Int
+        /// 実際の方位。方角の名前は45度刻みだが、記号はこちらで回す。
+        public let bearing: Double
     }
 
     public struct Course: Sendable {
@@ -56,7 +58,7 @@ public struct Route: Sendable {
                 guard abs(off) <= 26 else { continue }
                 if pick == nil || m < pick!.metres {
                     pick = Option(direction: d, station: st, metres: m,
-                                  minutes: config.minutes(forStraight: m))
+                                  minutes: config.minutes(forStraight: m), bearing: b)
                 }
             }
             // 同じ駅が隣り合う方角に二度出る。いちばん素直な向きだけ残す。

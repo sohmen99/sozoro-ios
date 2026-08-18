@@ -1,8 +1,8 @@
 import UIKit
 import SozoroCore
 
-/// 確認用。場所と時刻を自由に置いて、外に出ずに通しで見られる。
-/// ウェブ版の ?demo=1 と同じ役目。シミュレータでは実測が取れないので、こちらが本番になる。
+/// シミュレーションモード。場所と時刻を自由に置いて、外に出ずに通しで見られる。
+/// 屋内や審査のときは実測が取れないので、こちらで全画面を確かめられるようにしてある。
 @MainActor
 final class DemoMode {
     /// 起動引数 `-demo 1` でも入れられる。シミュレータで写真を撮るときに使う。
@@ -47,7 +47,7 @@ final class DemoMode {
     func stop() { timer?.invalidate(); timer = nil }
 }
 
-/// デモの操作盤。地図の上に薄く置く。
+/// シミュレーションの操作盤。地図の上に薄く置く。
 final class DemoPanel: UIView {
     private let demo: DemoMode
     private let store: WalkStore
@@ -79,8 +79,8 @@ final class DemoPanel: UIView {
 
     private func build() {
         let head = UILabel()
-        head.attributedText = Theme.label(store.t("Demo — place and time are yours",
-                                                   "デモ — 場所も時刻も自由"))
+        head.attributedText = Theme.label(store.t("Simulation — place and time are yours",
+                                                   "シミュレーション — 場所も時刻も自由"))
 
         slider.minimumValue = 0; slider.maximumValue = 23.5; slider.value = 14
         slider.minimumTrackTintColor = Theme.mid

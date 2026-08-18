@@ -36,6 +36,64 @@ enum Theme {
     static func mono(_ size: CGFloat, _ w: UIFont.Weight = .regular) -> UIFont {
         .monospacedDigitSystemFont(ofSize: size, weight: w)
     }
+    /// ボタンは3階層しかない。画面ごとに手で書くと、押せるのか押せないのか
+    /// 分からない灰色が湧くので、ここに集める。
+    ///
+    ///   primary   … いま押すもの。緑のベタ。1画面に1つだけ
+    ///   secondary … 押せるもの。面と枠があり、地の色に沈まない
+    ///   tertiary  … 下がる・やめる。控えめだが **必ず枠がある**
+    ///
+    /// 「押せるが今は勧めない」を灰色のベタで表さない。灰色のベタは無効の意味で、
+    /// 押せるものに使うと、押していいのか分からなくなる。
+    enum Rank { case primary, secondary, tertiary }
+
+    static func buttonConfig(_ rank: Rank, _ title: String, small: Bool = false)
+        -> UIButton.Configuration {
+        var c = UIButton.Configuration.filled()
+        let size: CGFloat = small ? 13.5 : 16
+        switch rank {
+        case .primary:
+            c.baseBackgroundColor = quietDk
+            c.baseForegroundColor = sumi
+        case .secondary:
+            c.baseBackgroundColor = sumi3
+            c.baseForegroundColor = .white
+            c.background.strokeColor = UIColor.white.withAlphaComponent(0.22)
+            c.background.strokeWidth = 1
+        case .tertiary:
+            c.baseBackgroundColor = .clear
+            c.baseForegroundColor = mutedDark
+            c.background.strokeColor = hairlineDk
+            c.background.strokeWidth = 1
+        }
+        c.cornerStyle = .large
+        c.contentInsets = .init(top: small ? 11 : 14, leading: 16,
+                                bottom: small ? 11 : 14, trailing: 16)
+        c.attributedTitle = AttributedString(title, attributes:
+            AttributeContainer([.font: body(size, .semibold)]))
+        return c
+    }
+
+    /// 3階層のボタンを1本作る。
+    @MainActor
+    static func button(_ rank: Rank, _ title: String, small: Bool = false,
+                       _ act: @escaping () -> Void) -> UIButton {
+        let b = UIButton(type: .system)
+        b.configuration = buttonConfig(rank, title, small: small)
+        b.addAction(UIAction { _ in act() }, for: .touchUpInside)
+        return b
+    }
+
+    /// 取り消せない行動の確認。散歩を終える・区間をやめる。
+    @MainActor
+    static func confirm(on vc: UIViewController, title: String, message: String,
+                        keep: String, go: String, _ act: @escaping () -> Void) {
+        let a = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        a.addAction(UIAlertAction(title: keep, style: .cancel))
+        a.addAction(UIAlertAction(title: go, style: .destructive) { _ in act() })
+        vc.present(a, animated: true)
+    }
+
     /// 小さい見出し。字間を空けて、うるさくしない。
     static func label(_ text: String) -> NSAttributedString {
         NSAttributedString(string: text.uppercased(), attributes: [

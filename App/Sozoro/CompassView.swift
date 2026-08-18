@@ -11,7 +11,6 @@ final class CompassDial: UIView {
     private let dashed = CAShapeLayer()
     private let progress = CAShapeLayer()
     private let needle = CALayer()
-    private let label = makeLabel("THIS WAY", Theme.mono(9, .semibold), Theme.quietDk, align: .center)
     private var marks: [UILabel] = []
     private var shown: Double = 0
     /// ウェブ版の図と同じ座標系で組んで、最後に縮める。ズレの元を作らない。
@@ -26,7 +25,6 @@ final class CompassDial: UIView {
             let l = makeLabel(t, Theme.mono(11), Theme.mutedDark, align: .center)
             addSubview(l); marks.append(l)
         }
-        addSubview(label)
         build()
     }
     required init?(coder: NSCoder) { fatalError() }
@@ -142,33 +140,15 @@ final class CompassDial: UIView {
             l.sizeToFit()
             l.center = CGPoint(x: c.x + places[i].0, y: c.y + places[i].1)
         }
-        label.sizeToFit()
-        placeLabel()
     }
 
     private var scale: CGFloat { min(bounds.width, bounds.height) / Self.box }
-
-    /// 「THIS WAY」は針と一緒に動くが、回さずに立てておく。
-    /// ウェブ版では #needle の中に入っていて、回した分を打ち消してある。
-    private func placeLabel() {
-        let k = scale
-        let a = CGFloat(shown) * .pi / 180
-        let r = 34 * k
-        label.center = CGPoint(x: bounds.midX + sin(a) * r, y: bounds.midY - cos(a) * r)
-    }
 
     private func applyNeedleTransform() {
         let k = scale
         needle.transform = CATransform3DConcat(
             CATransform3DMakeScale(k, k, 1),
             CATransform3DMakeRotation(CGFloat(shown * .pi / 180), 0, 0, 1))
-    }
-
-    /// 針についている文字。ウェブ版の data-ja="こっち" にあたる。
-    func setLabel(_ text: String) {
-        guard label.text != text else { return }
-        label.text = text
-        setNeedsLayout()
     }
 
     /// 差を -180〜180 に畳んでから足す。359°から1°へ動くとき一周しない。
@@ -181,11 +161,6 @@ final class CompassDial: UIView {
         applyNeedleTransform()
         progress.strokeEnd = CGFloat(progressValue ?? 0)
         CATransaction.commit()
-        // 文字は回さない。南を向いたとき逆さになるので。位置だけ針についていく。
-        UIView.animate(withDuration: 0.25) {
-            self.label.transform = .identity
-            self.placeLabel()
-        }
     }
 }
 
@@ -213,37 +188,31 @@ final class CompassViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = Theme.sumi
 
-        var cfg = UIButton.Configuration.filled()
-        cfg.baseBackgroundColor = Theme.quietDk
-        cfg.baseForegroundColor = Theme.sumi
-        cfg.cornerStyle = .large
-        cfg.contentInsets = .init(top: 13, leading: 16, bottom: 13, trailing: 16)
-        cfg.attributedTitle = AttributedString(
-            store.t("I'm here", "ここにいます"),
-            attributes: AttributeContainer([.font: Theme.body(16, .semibold)]))
-        arriveButton.configuration = cfg
+        // 押せるものは押せる顔で出す。到着したら緑のベタに変える。
+        arriveButton.configuration = Theme.buttonConfig(.secondary, store.t("I'm here", "ここにいます"))
         // 着いていないのに押して終わってしまうのを防ぐ。遠いときだけ確認する。
         arriveButton.addAction(UIAction { [weak self] _ in
             guard let self else { return }
             if self.store.arrived { self.onArrive?(); return }
             let left = Int((self.store.remaining ?? 0).rounded())
-            let a = UIAlertController(
+            Theme.confirm(on: self,
                 title: self.store.t("You are still \(left) m away", "まだ\(left)m あります"),
                 message: self.store.t("Ending here counts as arriving. Do it anyway?",
                                       "ここで終えると到着あつかいになります。それでも終えますか?"),
-                preferredStyle: .alert)
-            a.addAction(UIAlertAction(title: self.store.t("Keep walking", "まだ歩く"), style: .cancel))
-            a.addAction(UIAlertAction(title: self.store.t("End here", "ここで終える"), style: .destructive) { _ in
-                self.onArrive?()
-            })
-            self.present(a, animated: true)
+                keep: self.store.t("Keep walking", "まだ歩く"),
+                go: self.store.t("End here", "ここで終える")) { self.onArrive?() }
         }, for: .touchUpInside)
 
-        let giveUp = UIButton(type: .system)
-        giveUp.setTitle(store.t("Give up", "やめる"), for: .normal)
-        giveUp.titleLabel?.font = Theme.body(12)
-        giveUp.tintColor = Theme.mutedDark
-        giveUp.addAction(UIAction { [weak self] _ in self?.onGiveUp?() }, for: .touchUpInside)
+        // やめると、引いた行き先は消える。取り消せないので確かめる。
+        let giveUp = Theme.button(.tertiary, store.t("Give up", "やめる"), small: true) { [weak self] in
+            guard let self else { return }
+            Theme.confirm(on: self,
+                title: self.store.t("Give up on this walk?", "この散歩をやめますか?"),
+                message: self.store.t("The place we drew for you is lost. You can draw again from the map.",
+                                      "引いた行き先は消えます。地図から引き直せます。"),
+                keep: self.store.t("Keep walking", "まだ歩く"),
+                go: self.store.t("Give up", "やめる")) { self.onGiveUp?() }
+        }
 
         dial.translatesAutoresizingMaskIntoConstraints = false
         dial.heightAnchor.constraint(equalToConstant: 290).isActive = true
@@ -260,13 +229,17 @@ final class CompassViewController: UIViewController {
             self.store.hintsUsed = min(2, self.store.hintsUsed + 1)
             self.refresh()
         }
-        var rows: [UIView] = [stack(.vertical, 5, [head, sub]), dial, metrics, hintCard, arriveButton]
+        // 見出しの2行は「あてもなく」だけ。駅まで抜けるコースの寄り道は
+        // 静けさで選んでいないので、「静かな場所です」が嘘になる。
+        let headBlock = stack(.vertical, 5, [head, sub])
+        headBlock.isHidden = (store.course != nil)
+        var rows: [UIView] = [headBlock, dial, metrics, hintCard, arriveButton]
         if demoWalk != nil {
-            let w = UIButton(type: .system)
-            w.setTitle(store.t("Walk to it (demo)", "行き先まで歩く（デモ）"), for: .normal)
-            w.titleLabel?.font = Theme.body(13, .semibold)
-            w.tintColor = Theme.mid
-            w.addAction(UIAction { [weak self] _ in self?.demoWalk?() }, for: .touchUpInside)
+            let w = Theme.button(.tertiary,
+                                 store.t("Walk there (simulation)", "行き先まで歩く（シミュレーション）"),
+                                 small: true) { [weak self] in self?.demoWalk?() }
+            w.configuration?.baseForegroundColor = Theme.mid
+            w.configuration?.background.strokeColor = Theme.mid.withAlphaComponent(0.5)
             rows.append(w)
         }
         rows.append(giveUp)
@@ -288,7 +261,6 @@ final class CompassViewController: UIViewController {
 
     func refresh() {
         head.text = store.t("We are not telling you yet", "行き先は ひみつ")
-        dial.setLabel(store.t("THIS WAY", "こっち"))
         hintCard.render(store: store)
         guard let h = store.here, let d = store.destination else { return }
         let bearing = Geo.bearing(h, d.coordinate)
@@ -314,12 +286,11 @@ final class CompassViewController: UIViewController {
             : store.t("Follow the green tip. Something quiet, \(dir) of here.",
                       "緑の先を追ってください。ここから\(dirJA)の、静かな場所です。")
 
+        // 着いたら緑のベタに上げる。着く前も押せるので、灰色のベタにはしない。
         let there = store.arrived
-        arriveButton.configuration?.attributedTitle = AttributedString(
-            there ? store.t("You made it", "着きました") : store.t("I'm here", "ここにいます"),
-            attributes: AttributeContainer([.font: Theme.body(16, .semibold)]))
-        arriveButton.configuration?.baseBackgroundColor = there ? Theme.quietDk : Theme.sumi3
-        arriveButton.configuration?.baseForegroundColor = there ? Theme.sumi : .white
+        arriveButton.configuration = Theme.buttonConfig(
+            there ? .primary : .secondary,
+            there ? store.t("You made it", "着きました") : store.t("I'm here", "ここにいます"))
     }
 }
 

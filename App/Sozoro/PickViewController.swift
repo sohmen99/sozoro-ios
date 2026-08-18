@@ -268,8 +268,16 @@ final class ArrivalViewController: UIViewController {
         rows.append(button(ja ? "あつめた印" : "Marks you have", quiet: true, small: true) {
             [weak self] in self?.onRewards?()
         })
+        // 散歩を終える。取り消せないので確かめる。
         rows.append(button(ja ? "ここで終える" : "Stop here", quiet: true, small: true) {
-            [weak self] in self?.onStop?()
+            [weak self] in
+            guard let self else { return }
+            Theme.confirm(on: self,
+                title: ja ? "ここで終えますか?" : "Stop here?",
+                message: ja ? "記録は残ります。地図にもどって、また引き直せます。"
+                            : "Your walk is saved. You can start another one from the map.",
+                keep: ja ? "つづける" : "Keep going",
+                go: ja ? "終える" : "Stop here") { self.onStop?() }
         })
         rows.append(makeLabel(source(), Theme.body(9.5), Theme.ink2, lines: 0))
 
@@ -315,35 +323,12 @@ final class ArrivalViewController: UIViewController {
         } else {
             title = ja ? "もう一か所" : "Keep going"
         }
-        var cfg = UIButton.Configuration.filled()
-        cfg.baseBackgroundColor = Theme.quietDk
-        cfg.baseForegroundColor = Theme.sumi
-        cfg.cornerStyle = .large
-        cfg.contentInsets = .init(top: 13, leading: 16, bottom: 13, trailing: 16)
-        cfg.attributedTitle = AttributedString(title, attributes:
-            AttributeContainer([.font: Theme.body(16, .semibold)]))
-        let b = UIButton(type: .system)
-        b.configuration = cfg
-        b.addAction(UIAction { [weak self] _ in self?.onKeep?() }, for: .touchUpInside)
-        return b
+        return Theme.button(.primary, title) { [weak self] in self?.onKeep?() }
     }
 
     private func button(_ t: String, quiet: Bool, small: Bool = false,
                         _ act: @escaping () -> Void) -> UIButton {
-        let b = UIButton(type: .system)
-        var c = UIButton.Configuration.plain()
-        c.attributedTitle = AttributedString(t, attributes:
-            AttributeContainer([.font: Theme.body(small ? 12.5 : 14, .medium)]))
-        c.baseForegroundColor = small ? Theme.mutedDark : .white
-        if !small {
-            c.background.strokeColor = UIColor.white.withAlphaComponent(0.16)
-            c.background.strokeWidth = 1
-            c.background.cornerRadius = 10
-        }
-        c.contentInsets = .init(top: 11, leading: 14, bottom: 11, trailing: 14)
-        b.configuration = c
-        b.addAction(UIAction { _ in act() }, for: .touchUpInside)
-        return b
+        Theme.button(small ? .tertiary : .secondary, t, small: small, act)
     }
 
     private func rewardIcon(_ id: String) -> String {

@@ -35,15 +35,18 @@ final class DirectionsViewController: UIViewController {
         for o in opts { rows.append(row(for: o)) }
 
         // まかせる。押した時点で決まるので、あとから「まだ続けるか」は聞かない。
-        let any = ghost(store.t("Let it choose", "まかせる")) { [weak self] in
+        let any = Theme.button(.secondary, store.t("Let it choose", "まかせる")) { [weak self] in
             guard let self, let h = self.store.here else { return }
             self.store.startCourse(from: h)
             self.onStart?()
         }
-        let cancel = ghost(store.t("Back to the map", "地図にもどる")) { [weak self] in
-            self?.onCancel?()
-        }
-        rows.append(contentsOf: [any, cancel])
+        let cancel = Theme.button(.tertiary, store.t("Back to the map", "地図にもどる"),
+                                  small: true) { [weak self] in self?.onCancel?() }
+        // 選ぶものと、締めの操作のあいだに間を置く。並びで意味が分かるように。
+        let gap = UIView()
+        gap.translatesAutoresizingMaskIntoConstraints = false
+        gap.heightAnchor.constraint(equalToConstant: 6).isActive = true
+        rows.append(contentsOf: [gap, any, cancel])
 
         let col = stack(.vertical, 12, rows)
         let scroll = UIScrollView()
@@ -71,21 +74,35 @@ final class DirectionsViewController: UIViewController {
         let name = store.data.displayName(o.station, japanese: ja)
         let b = UIButton(type: .system)
         var c = UIButton.Configuration.plain()
-        c.contentInsets = .init(top: 14, leading: 16, bottom: 14, trailing: 16)
+        c.contentInsets = .init(top: 16, leading: 16, bottom: 16, trailing: 16)
         c.background.cornerRadius = 16
-        c.background.strokeColor = Theme.hairlineDk
+        c.background.backgroundColor = Theme.sumi2
+        c.background.strokeColor = UIColor.white.withAlphaComponent(0.18)
         c.background.strokeWidth = 1
         b.configuration = c
 
+        // 方角の記号。押す前に、どっちへ向くのかが絵で分かるように。
+        let arrow = UIImageView(image: UIImage(systemName: "arrow.up",
+            withConfiguration: UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)))
+        arrow.tintColor = Theme.quietDk
+        arrow.transform = CGAffineTransform(rotationAngle: CGFloat(o.bearing) * .pi / 180)
+        arrow.translatesAutoresizingMaskIntoConstraints = false
+        arrow.widthAnchor.constraint(equalToConstant: 26).isActive = true
+        arrow.contentMode = .center
+
         let dir = makeLabel(ja ? o.direction.ja : o.direction.en, Theme.body(16, .semibold), .white)
-        let st = makeLabel(name, Theme.body(13), Theme.mutedDark)
+        let st = makeLabel(name, Theme.body(13), .white.withAlphaComponent(0.72))
         let m = makeLabel(ja ? "\(o.minutes)分・\(legs)区間"
                              : "\(o.minutes) min · \(legs) \(legs == 1 ? "leg" : "legs")",
                           Theme.mono(11.5), Theme.mutedDark)
-        let col = stack(.vertical, 3, [dir, st, m])
+        let text = stack(.vertical, 3, [dir, st, m])
+        let chev = UIImageView(image: UIImage(systemName: "chevron.right"))
+        chev.tintColor = Theme.mutedDark
+        chev.setContentHuggingPriority(.required, for: .horizontal)
+        let col = stack(.horizontal, 12, [arrow, text, UIView(), chev], align: .center)
         col.isUserInteractionEnabled = false
         b.addSubview(col)
-        col.pin(to: b, insets: UIEdgeInsets(top: 14, left: 16, bottom: 14, right: 16))
+        col.pin(to: b, insets: UIEdgeInsets(top: 16, left: 16, bottom: 16, right: 16))
         b.addAction(UIAction { [weak self] _ in
             guard let self, let h = self.store.here else { return }
             self.store.startCourse(from: h, with: o)
