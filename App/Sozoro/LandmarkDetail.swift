@@ -25,6 +25,11 @@ final class LandmarkDetailView: UIView {
         close.tintColor = Theme.muted
         close.addAction(UIAction { [weak self] _ in self?.onClose?() }, for: .touchUpInside)
 
+        // 種類ごとの絵。人影は混み具合で増える。
+        let scene = DetailScene(icon: landmark.icon, crowd: v)
+        scene.translatesAutoresizingMaskIntoConstraints = false
+        scene.heightAnchor.constraint(equalToConstant: 116).isActive = true
+
         let icon = IconView(landmark.icon, size: 26, colour: Theme.ink)
         let name = makeLabel(landmark.en, Theme.display(21), Theme.ink)
         let ja = makeLabel(landmark.ja, Theme.body(11.5), Theme.muted)
@@ -64,7 +69,7 @@ final class LandmarkDetailView: UIView {
         let top = stack(.horizontal, 11, [icon, stack(.vertical, 1, [name, ja]), UIView(), close], align: .center)
         let numbers = stack(.horizontal, 4, [now100, pct, UIView(), chip], align: .lastBaseline)
         let col = stack(.vertical, 14, [
-            top, numbers, verdictLabel, chart,
+            top, scene, numbers, verdictLabel, chart,
             stack(.vertical, 3, [makeLabel(head, Theme.body(13, .semibold), Theme.ink),
                                  makeLabel(sub, Theme.body(11.5), Theme.muted, lines: 0)]),
             rule(), meta

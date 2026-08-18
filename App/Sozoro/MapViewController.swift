@@ -59,6 +59,15 @@ final class MapViewController: UIViewController {
         }
         addMeMarker()
 
+        // 端の凡例と縮尺。何色が混んでいるのか言わずに色で塗るのは、読めない図になる。
+        view.addSubview(foot)
+        foot.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            foot.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 14),
+            foot.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -14),
+            foot.bottomAnchor.constraint(equalTo: sheet.topAnchor, constant: -10)
+        ])
+
         view.addSubview(offArea)
         offArea.translatesAutoresizingMaskIntoConstraints = false
         offArea.isHidden = true
@@ -103,9 +112,12 @@ final class MapViewController: UIViewController {
         sheet.refresh()
         layoutOffArea()
         refreshOffArea()
+        foot.update(from: map)
     }
 
+    private lazy var foot = MapFoot(lang: store.lang)
     private var detail: LandmarkDetailView?
+    private var detailScrim: UIView?
     private var meMarker: MeAnnotation?
     private func addMeMarker() {
         guard let h = store.here else { return }
@@ -233,6 +245,8 @@ final class LandmarkPin: NSObject, MKAnnotation {
 }
 
 extension MapViewController: MKMapViewDelegate {
+    func mapView(_ m: MKMapView, regionDidChangeAnimated: Bool) { foot.update(from: m) }
+
     func mapView(_ m: MKMapView, rendererFor o: MKOverlay) -> MKOverlayRenderer {
         o is HeatOverlay ? HeatRenderer(overlay: o) : MKOverlayRenderer(overlay: o)
     }
@@ -284,25 +298,40 @@ extension MapViewController: MKMapViewDelegate {
         showDetail(p.landmark)
     }
 
+    @objc func closeDetail() {
+        let d = detail, s = detailScrim
+        detail = nil; detailScrim = nil
+        UIView.animate(withDuration: 0.18) {
+            d?.alpha = 0; s?.alpha = 0
+            d?.transform = CGAffineTransform(scaleX: 0.96, y: 0.96)
+        } completion: { _ in d?.removeFromSuperview(); s?.removeFromSuperview() }
+    }
+
     func showDetail(_ l: Landmark) {
-        detail?.removeFromSuperview()
+        closeDetail()
         let d = LandmarkDetailView(landmark: l, crowd: store.crowd, now: store.clock())
-        d.onClose = { [weak self] in
-            UIView.animate(withDuration: 0.2) { self?.detail?.alpha = 0 } completion: { _ in
-                self?.detail?.removeFromSuperview(); self?.detail = nil
-            }
-        }
+        d.onClose = { [weak self] in self?.closeDetail() }
+        // 背景を暗くして、外を叩いても閉じられるようにする。
+        let scrim = UIView()
+        scrim.backgroundColor = UIColor(hex: 0x14171C, alpha: 0.38)
+        view.addSubview(scrim)
+        scrim.pin(to: view)
+        scrim.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(closeDetail)))
+        detailScrim = scrim
+
         view.addSubview(d)
+        view.bringSubviewToFront(d)          // フォームより前。重なってよい。
         d.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            d.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
-            d.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12),
-            d.bottomAnchor.constraint(equalTo: sheet.topAnchor, constant: -10)
+            d.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            d.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            d.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
         d.alpha = 0
-        d.transform = CGAffineTransform(translationX: 0, y: 14)
-        UIView.animate(withDuration: 0.24, delay: 0, options: [.curveEaseOut]) {
-            d.alpha = 1; d.transform = .identity
+        d.transform = CGAffineTransform(scaleX: 0.96, y: 0.96)
+        scrim.alpha = 0
+        UIView.animate(withDuration: 0.22, delay: 0, options: [.curveEaseOut]) {
+            d.alpha = 1; d.transform = .identity; scrim.alpha = 1
         }
         detail = d
     }
