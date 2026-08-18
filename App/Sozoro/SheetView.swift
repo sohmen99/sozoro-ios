@@ -16,13 +16,11 @@ final class SheetView: UIView {
     /// 追いつかないので、カードの見出しに組み込んで一緒に動かす。
     let foot: MapFoot
     // ウェブ版の CATEGORIES と同じ3つ。3つ並ぶので見出しは短くする。
-    private let foodChip  = ChipButton(title: "Food",    symbol: "fork.knife")
-    private let cultChip  = ChipButton(title: "Culture", symbol: "building.columns")
-    private let greenChip = ChipButton(title: "Green",   symbol: "leaf")
-    private let wanderRow = ModeRow(title: "Wander", symbol: "die.face.5",
-        note: "One stop at a time, about 15 minutes each. Stop whenever you like.")
-    private let crossRow = ModeRow(title: "Cross town", symbol: "arrow.triangle.turn.up.right.diamond",
-        note: "A fixed line out to a station. Two or three stops, then a train home.")
+    private let foodChip: ChipButton
+    private let cultChip: ChipButton
+    private let greenChip: ChipButton
+    private let wanderRow: ModeRow
+    private let crossRow: ModeRow
     private let beginButton = UIButton(type: .system)
     private let noteLabel = makeLabel("", Theme.body(11.5), Theme.muted, lines: 0)
     private let footLabel = makeLabel("", Theme.body(11.5), Theme.muted, lines: 0)
@@ -30,6 +28,16 @@ final class SheetView: UIView {
     init(store: WalkStore) {
         self.store = store
         self.foot = MapFoot(lang: store.lang)
+        foodChip  = ChipButton(title: store.t("Food", "たべもの"),  symbol: "fork.knife")
+        cultChip  = ChipButton(title: store.t("Culture", "寺社"),   symbol: "building.columns")
+        greenChip = ChipButton(title: store.t("Green", "みどり"),   symbol: "leaf")
+        wanderRow = ModeRow(title: store.t("Wander", "あてもなく"), symbol: "die.face.5",
+            note: store.t("One stop at a time, about 15 minutes each. Stop whenever you like.",
+                          "15分ずつ、一か所ずつ。いつでもやめられます。"))
+        crossRow = ModeRow(title: store.t("Cross town", "向こうまで"),
+            symbol: "arrow.triangle.turn.up.right.diamond",
+            note: store.t("A fixed line out to a station. Two or three stops, then a train home.",
+                          "駅までの一本道。2〜3か所寄って、電車で帰れます。"))
         super.init(frame: .zero)
         backgroundColor = Theme.washi
         layer.cornerRadius = 22
@@ -120,18 +128,23 @@ final class SheetView: UIView {
         grip.topAnchor.constraint(equalTo: gripWrap.topAnchor).isActive = true
         grip.bottomAnchor.constraint(equalTo: gripWrap.bottomAnchor).isActive = true
 
-        let title = makeLabel("Where should we wander?", Theme.display(21), Theme.ink)
-        let sub = makeLabel("Tell us what you're after. We draw from the quiet side, and keep the spot to ourselves.",
+        let title = makeLabel(store.t("Where should we wander?", "どこへ ぶらつきますか"),
+                              Theme.display(21), Theme.ink)
+        let sub = makeLabel(store.t(
+            "Tell us what you're after. We draw from the quiet side, and keep the spot to ourselves.",
+            "気分だけ教えてください。空いている側から引いて、行き先は伏せておきます。"),
                             Theme.body(12.5), Theme.muted, lines: 0)
 
-        let lookLabel = UILabel(); lookLabel.attributedText = Theme.label("Looking for")
+        let lookLabel = UILabel()
+        lookLabel.attributedText = Theme.label(store.t("Looking for", "さがすもの"))
         let chips = stack(.horizontal, 6, [foodChip, cultChip, greenChip])
         chips.distribution = .fillEqually
         foodChip.addAction(UIAction  { [weak self] _ in self?.store.toggle(.food) },    for: .touchUpInside)
         cultChip.addAction(UIAction  { [weak self] _ in self?.store.toggle(.culture) }, for: .touchUpInside)
         greenChip.addAction(UIAction { [weak self] _ in self?.store.toggle(.green) },   for: .touchUpInside)
 
-        let modeLabel = UILabel(); modeLabel.attributedText = Theme.label("How you walk")
+        let modeLabel = UILabel()
+        modeLabel.attributedText = Theme.label(store.t("How you walk", "歩き方"))
         wanderRow.addAction(UIAction { [weak self] _ in self?.store.set(mode: .wander) }, for: .touchUpInside)
         crossRow.addAction(UIAction { [weak self] _ in self?.store.set(mode: .crossTown) }, for: .touchUpInside)
 
@@ -146,7 +159,7 @@ final class SheetView: UIView {
         // 畳んだときの一行。いま何を選んでいるかだけ出す。
         chevron.tintColor = Theme.muted
         chevron.setContentHuggingPriority(.required, for: .horizontal)
-        let peekTitle = makeLabel("Where to?", Theme.body(13, .semibold), Theme.ink)
+        let peekTitle = makeLabel(store.t("Where to?", "どこへ?"), Theme.body(13, .semibold), Theme.ink)
         let peekStack = stack(.horizontal, 10, [peekTitle, peekSummary, UIView(), chevron], align: .center)
         peekRow.addSubview(peekStack)
         peekStack.pin(to: peekRow, insets: .init(top: 0, left: 0, bottom: 0, right: 0))
@@ -183,7 +196,8 @@ final class SheetView: UIView {
         let n = store.wanderCount
         let thin = (n != nil && n! < 3)
         noteLabel.text = thin
-            ? "Only \(n!) within 15 minutes of here. Cross town works from anywhere."
+            ? store.t("Only \(n!) within 15 minutes of here. Cross town works from anywhere.",
+                      "ここから15分の範囲に\(n!)件しかありません。向こうまで抜けるほうはどこからでも動きます。")
             : store.note
         noteLabel.isHidden = (noteLabel.text ?? "").isEmpty
 
@@ -194,21 +208,27 @@ final class SheetView: UIView {
         beginButton.isEnabled = ready && !outside
         beginButton.alpha = beginButton.isEnabled ? 1 : 0.42
         beginButton.configuration?.attributedTitle = AttributedString(
-            !ready ? "Looking for you…" : (outside ? "Too far from the ward" : "Begin"),
+            !ready ? store.t("Looking for you…", "現在地をさがしています…")
+                   : (outside ? store.t("Too far from the ward", "区から離れすぎています")
+                              : store.t("Begin", "はじめる")),
             attributes: AttributeContainer([.font: Theme.body(16, .semibold)]))
         if outside {
-            noteLabel.text = "You are outside Taito. The places we can send you to are all back that way."
+            noteLabel.text = store.t(
+                "You are outside Taito. The places we can send you to are all back that way.",
+                "台東区の外にいます。行き先はみな、そちら側に寄っています。")
             noteLabel.isHidden = false
         }
         peekSummary.text = [
-            store.kinds.contains(.food) ? "Food" : nil,
-            store.kinds.contains(.culture) ? "Culture" : nil,
-            store.kinds.contains(.green) ? "Green" : nil
+            store.kinds.contains(.food) ? store.t("Food", "たべもの") : nil,
+            store.kinds.contains(.culture) ? store.t("Culture", "寺社") : nil,
+            store.kinds.contains(.green) ? store.t("Green", "みどり") : nil
         ].compactMap { $0 }.joined(separator: " · ")
-            + " / " + (store.mode == .wander ? "Wander" : "Cross town")
+            + " / " + (store.mode == .wander ? store.t("Wander", "あてもなく")
+                                             : store.t("Cross town", "向こうまで"))
+        let km = String(format: "%.1f", store.draw.target / 1000)
         footLabel.text = store.mode == .crossTown
-            ? "A fixed line out to a station."
-            : "About \(String(format: "%.1f", store.draw.target / 1000)) km to the next stop."
+            ? store.t("A fixed line out to a station.", "駅までの一本道です。")
+            : store.t("About \(km) km to the next stop.", "次の一か所まで およそ\(km)km。")
     }
 }
 

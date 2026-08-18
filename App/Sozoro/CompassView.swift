@@ -164,6 +164,13 @@ final class CompassDial: UIView {
             CATransform3DMakeRotation(CGFloat(shown * .pi / 180), 0, 0, 1))
     }
 
+    /// 針についている文字。ウェブ版の data-ja="こっち" にあたる。
+    func setLabel(_ text: String) {
+        guard label.text != text else { return }
+        label.text = text
+        setNeedsLayout()
+    }
+
     /// 差を -180〜180 に畳んでから足す。359°から1°へ動くとき一周しない。
     func point(to rotation: Double, progressValue: Double?) {
         let delta = ((rotation - shown).truncatingRemainder(dividingBy: 360) + 540)
@@ -186,7 +193,7 @@ final class CompassDial: UIView {
 final class CompassViewController: UIViewController {
     private let store: WalkStore
     private let dial = CompassDial()
-    private let head = makeLabel("We are not telling you yet", Theme.display(19), .white, align: .center)
+    private let head = makeLabel("", Theme.display(19), .white, align: .center)
     private let sub = makeLabel("", Theme.body(12), Theme.mutedDark, align: .center)
     private let distValue = makeLabel("—", Theme.mono(22, .semibold), .white, align: .center)
     private let minsValue = makeLabel("—", Theme.mono(22, .semibold), .white, align: .center)
@@ -212,7 +219,8 @@ final class CompassViewController: UIViewController {
         cfg.cornerStyle = .large
         cfg.contentInsets = .init(top: 13, leading: 16, bottom: 13, trailing: 16)
         cfg.attributedTitle = AttributedString(
-            "I'm here", attributes: AttributeContainer([.font: Theme.body(16, .semibold)]))
+            store.t("I'm here", "ここにいます"),
+            attributes: AttributeContainer([.font: Theme.body(16, .semibold)]))
         arriveButton.configuration = cfg
         // 着いていないのに押して終わってしまうのを防ぐ。遠いときだけ確認する。
         arriveButton.addAction(UIAction { [weak self] _ in
@@ -220,18 +228,19 @@ final class CompassViewController: UIViewController {
             if self.store.arrived { self.onArrive?(); return }
             let left = Int((self.store.remaining ?? 0).rounded())
             let a = UIAlertController(
-                title: "You are still \(left) m away",
-                message: "Ending here counts as arriving. Do it anyway?",
+                title: self.store.t("You are still \(left) m away", "まだ\(left)m あります"),
+                message: self.store.t("Ending here counts as arriving. Do it anyway?",
+                                      "ここで終えると到着あつかいになります。それでも終えますか?"),
                 preferredStyle: .alert)
-            a.addAction(UIAlertAction(title: "Keep walking", style: .cancel))
-            a.addAction(UIAlertAction(title: "End here", style: .destructive) { _ in
+            a.addAction(UIAlertAction(title: self.store.t("Keep walking", "まだ歩く"), style: .cancel))
+            a.addAction(UIAlertAction(title: self.store.t("End here", "ここで終える"), style: .destructive) { _ in
                 self.onArrive?()
             })
             self.present(a, animated: true)
         }, for: .touchUpInside)
 
         let giveUp = UIButton(type: .system)
-        giveUp.setTitle("Give up", for: .normal)
+        giveUp.setTitle(store.t("Give up", "やめる"), for: .normal)
         giveUp.titleLabel?.font = Theme.body(12)
         giveUp.tintColor = Theme.mutedDark
         giveUp.addAction(UIAction { [weak self] _ in self?.onGiveUp?() }, for: .touchUpInside)
@@ -240,7 +249,9 @@ final class CompassViewController: UIViewController {
         dial.heightAnchor.constraint(equalToConstant: 290).isActive = true
 
         let metrics = stack(.horizontal, 22, [
-            metric(distValue, "LEFT"), metric(minsValue, "ON FOOT"), metric(brgValue, "BEARING")
+            metric(distValue, store.t("LEFT", "のこり")),
+            metric(minsValue, store.t("ON FOOT", "とほ")),
+            metric(brgValue,  store.t("BEARING", "ほうい"))
         ])
         metrics.distribution = .fillEqually
 
@@ -252,7 +263,7 @@ final class CompassViewController: UIViewController {
         var rows: [UIView] = [stack(.vertical, 5, [head, sub]), dial, metrics, hintCard, arriveButton]
         if demoWalk != nil {
             let w = UIButton(type: .system)
-            w.setTitle("Walk to it (demo)", for: .normal)
+            w.setTitle(store.t("Walk to it (demo)", "行き先まで歩く（デモ）"), for: .normal)
             w.titleLabel?.font = Theme.body(13, .semibold)
             w.tintColor = Theme.mid
             w.addAction(UIAction { [weak self] _ in self?.demoWalk?() }, for: .touchUpInside)
@@ -276,6 +287,9 @@ final class CompassViewController: UIViewController {
     }
 
     func refresh() {
+        head.text = store.t("We are not telling you yet", "行き先は ひみつ")
+        dial.setLabel(store.t("THIS WAY", "こっち"))
+        hintCard.render(store: store)
         guard let h = store.here, let d = store.destination else { return }
         let bearing = Geo.bearing(h, d.coordinate)
         let rot = store.heading == nil ? bearing : bearing - store.heading!
@@ -293,14 +307,16 @@ final class CompassViewController: UIViewController {
         brgValue.text = String(format: "%03.0f°", bearing)
 
         let dir = Geo.compassEN[Geo.compassIndex(bearing)]
+        let dirJA = Geo.compassJA[Geo.compassIndex(bearing)]
         sub.text = store.heading == nil
-            ? "Follow the green tip. Something quiet, \(dir) of here. The dial is north-up."
-            : "Follow the green tip. Something quiet, \(dir) of here."
+            ? store.t("Follow the green tip. Something quiet, \(dir) of here. The dial is north-up.",
+                      "緑の先を追ってください。ここから\(dirJA)の、静かな場所です。文字盤は北が上で固定です。")
+            : store.t("Follow the green tip. Something quiet, \(dir) of here.",
+                      "緑の先を追ってください。ここから\(dirJA)の、静かな場所です。")
 
-        hintCard.render(store: store)
         let there = store.arrived
         arriveButton.configuration?.attributedTitle = AttributedString(
-            there ? "You made it" : "I'm here",
+            there ? store.t("You made it", "着きました") : store.t("I'm here", "ここにいます"),
             attributes: AttributeContainer([.font: Theme.body(16, .semibold)]))
         arriveButton.configuration?.baseBackgroundColor = there ? Theme.quietDk : Theme.sumi3
         arriveButton.configuration?.baseForegroundColor = there ? Theme.sumi : .white
@@ -313,8 +329,7 @@ final class HintCard: UIView {
     var onUse: (() -> Void)?
     private let button = UIButton(type: .system)
     private let body = UIStackView()
-    private let empty = makeLabel("Two hints. Spend them when you are lost enough to want one.",
-                                  Theme.body(11.5), Theme.mutedDark, lines: 0)
+    private let empty = makeLabel("", Theme.body(11.5), Theme.mutedDark, lines: 0)
 
     init() {
         super.init(frame: .zero)
@@ -344,18 +359,24 @@ final class HintCard: UIView {
     func render(store: WalkStore) {
         body.arrangedSubviews.forEach { $0.removeFromSuperview() }
         let used = store.hintsUsed
+        empty.text = store.t("Two hints. Spend them when you are lost enough to want one.",
+                             "ヒントは2回。迷って欲しくなったら使ってください。")
         button.configuration?.attributedTitle = AttributedString(
-            used >= 2 ? "No hints left" : "Use a hint (\(2 - used) left)",
+            used >= 2 ? store.t("No hints left", "ヒントはもうありません")
+                      : store.t("Use a hint (\(2 - used) left)", "ヒントを使う（あと\(2 - used)）"),
             attributes: AttributeContainer([.font: Theme.body(12, .semibold)]))
         button.isEnabled = used < 2
         button.alpha = used < 2 ? 1 : 0.45
         empty.isHidden = used > 0
         guard let d = store.destination else { return }
-        if used >= 1 { body.addArrangedSubview(line("What it is", store.category(d))) }
+        if used >= 1 {
+            body.addArrangedSubview(line(store.t("What it is", "なにか"), store.category(d)))
+        }
         if used >= 2 {
             let v = store.crowd.level(d, at: store.clock())
-            body.addArrangedSubview(line("How busy", "\(v)% of peak"))
-            body.addArrangedSubview(line("First letter", store.firstLetter(d)))
+            body.addArrangedSubview(line(store.t("How busy", "混み具合"),
+                                         store.t("\(v)% of peak", "ピーク比 \(v)%")))
+            body.addArrangedSubview(line(store.t("First letter", "頭の一文字"), store.firstLetter(d)))
         }
     }
 

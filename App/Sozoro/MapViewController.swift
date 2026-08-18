@@ -333,7 +333,7 @@ extension MapViewController: MKMapViewDelegate {
 
     func showDetail(_ l: Landmark) {
         closeDetail()
-        let d = LandmarkDetailView(landmark: l, crowd: store.crowd, now: store.clock())
+        let d = LandmarkDetailView(landmark: l, crowd: store.crowd, now: store.clock(), lang: store.lang)
         d.onClose = { [weak self] in self?.closeDetail() }
         // 背景を暗くして、外を叩いても閉じられるようにする。
         let scrim = UIView()

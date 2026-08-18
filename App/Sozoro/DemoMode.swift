@@ -53,13 +53,14 @@ final class DemoPanel: UIView {
     private let store: WalkStore
     private let hourLabel = makeLabel("14:00", Theme.mono(13, .semibold), .white)
     private let slider = UISlider()
-    private let daySeg = UISegmentedControl(items: ["Weekday", "Weekend"])
+    private let daySeg: UISegmentedControl
     private let speedSeg = UISegmentedControl(items: ["×1", "×10", "×60"])
     private let walkButton = UIButton(type: .system)
     var onChange: (() -> Void)?
 
     init(demo: DemoMode, store: WalkStore) {
         self.demo = demo; self.store = store
+        daySeg = UISegmentedControl(items: [store.t("Weekday", "平日"), store.t("Weekend", "休日")])
         super.init(frame: .zero)
         backgroundColor = Theme.sumi.withAlphaComponent(0.92)
         layer.cornerRadius = 14
@@ -78,7 +79,8 @@ final class DemoPanel: UIView {
 
     private func build() {
         let head = UILabel()
-        head.attributedText = Theme.label("Demo — place and time are yours")
+        head.attributedText = Theme.label(store.t("Demo — place and time are yours",
+                                                   "デモ — 場所も時刻も自由"))
 
         slider.minimumValue = 0; slider.maximumValue = 23.5; slider.value = 14
         slider.minimumTrackTintColor = Theme.mid
@@ -105,7 +107,7 @@ final class DemoPanel: UIView {
         }, for: .valueChanged)
 
         var c = UIButton.Configuration.plain()
-        c.attributedTitle = AttributedString("Walk to it", attributes:
+        c.attributedTitle = AttributedString(store.t("Walk to it", "行き先まで歩く"), attributes:
             AttributeContainer([.font: Theme.body(13, .semibold)]))
         c.baseForegroundColor = Theme.mid
         c.background.strokeColor = Theme.mid.withAlphaComponent(0.6)
@@ -118,7 +120,8 @@ final class DemoPanel: UIView {
             self.demo.walk(store: self.store) { self.onChange?() }
         }, for: .touchUpInside)
 
-        let hint = makeLabel("Tap the map to stand there.", Theme.body(10.5), Theme.mutedDark)
+        let hint = makeLabel(store.t("Tap the map to stand there.", "地図を叩くと、そこに立ちます。"),
+                             Theme.body(10.5), Theme.mutedDark)
 
         body.axis = .vertical; body.spacing = 9
         [slider, daySeg, speedSeg, walkButton, hint].forEach { body.addArrangedSubview($0) }
@@ -157,6 +160,7 @@ final class DemoPanel: UIView {
         let h = Int(demo.hour), m = Int((demo.hour - floor(demo.hour)) * 60)
         hourLabel.text = String(format: "%02d:%02d", h, m)
         summary.text = String(format: "%02d:%02d · %@ · ×%.0f", h, m,
-                              demo.weekend ? "Weekend" : "Weekday", demo.speed)
+                              demo.weekend ? store.t("Weekend", "休日") : store.t("Weekday", "平日"),
+                              demo.speed)
     }
 }

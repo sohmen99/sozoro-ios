@@ -86,8 +86,10 @@ final class PickViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = Theme.sumi.withAlphaComponent(0.95)
 
-        let eyebrow = UILabel(); eyebrow.attributedText = Theme.label("Three ways from here")
-        let title = makeLabel("Pick one. We still will not say.", Theme.display(20), .white, lines: 0)
+        let eyebrow = UILabel()
+        eyebrow.attributedText = Theme.label(store.t("Three ways from here", "ここから 三つ"))
+        let title = makeLabel(store.t("Pick one. We still will not say.", "ひとつ選んでください。まだ言いません。"),
+                              Theme.display(store.lang == .ja ? 19 : 20), .white, lines: 0)
         let texts = store.teasers(for: store.picks)
         let cards = stack(.vertical, 10, store.picks.enumerated().map { i, s in
             let c = PickCard(spot: s, teaserText: texts[i], metaText: store.meta(s))
@@ -95,11 +97,13 @@ final class PickViewController: UIViewController {
             return c
         })
 
-        let note = makeLabel(store.note ?? "You find out what it was by standing in front of it.",
+        let note = makeLabel(store.note ?? store.t(
+            "You find out what it was by standing in front of it.",
+            "何だったのかは、その前に立ったときに分かります。"),
                              Theme.body(11), Theme.muted, lines: 0, align: .center)
 
-        let again = quietButton("Deal again") { [weak self] in self?.onRedraw?() }
-        let back  = quietButton("Back") { [weak self] in self?.onCancel?() }
+        let again = quietButton(store.t("Deal again", "引き直す")) { [weak self] in self?.onRedraw?() }
+        let back  = quietButton(store.t("Back", "もどる")) { [weak self] in self?.onCancel?() }
 
         let col = stack(.vertical, 14, [
             stack(.vertical, 4, [eyebrow, title]), cards,
@@ -185,8 +189,8 @@ final class ArrivalViewController: UIViewController {
         // 取れた印。新しいものがあれば、そこだけ目立たせる。
         let earned = WalkLog.shared.earned
         if let f = freshSeals.first {
-            rows.append(SealBadge(symbol: rewardIcon(f.id), title: f.title,
-                                  sub: (ja ? "あたらしい印 — " : "New — ") + f.condition,
+            rows.append(SealBadge(symbol: rewardIcon(f.id), title: f.title(store.lang),
+                                  sub: (ja ? "あたらしい印 — " : "New — ") + f.condition(store.lang),
                                   fresh: true))
         } else {
             rows.append(SealBadge(symbol: "i-seal",

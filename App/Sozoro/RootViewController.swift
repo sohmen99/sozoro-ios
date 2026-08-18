@@ -9,7 +9,7 @@ import SwiftUI
 /// 表紙 → 地図 → 三択 → コンパス → 到着 → 印 の行き来。
 @MainActor
 final class RootViewController: UIViewController {
-    enum Screen { case cover, map, picks, compass, arrival, rewards }
+    enum Screen { case cover, map, directions, picks, compass, arrival, rewards }
 
     let store: WalkStore
     let demo: DemoMode
@@ -31,6 +31,7 @@ final class RootViewController: UIViewController {
            i + 1 < CommandLine.arguments.count {
             switch CommandLine.arguments[i + 1] {
             case "map":     start = .map
+            case "dirs":    start = .directions
             case "picks":   start = .picks
             case "compass": start = .compass
             case "arrival": start = .arrival
@@ -38,7 +39,12 @@ final class RootViewController: UIViewController {
             default:        start = .cover
             }
         }
-        self.init(store: WalkStore(), start: start)
+        let s = WalkStore()
+        if let i = CommandLine.arguments.firstIndex(of: "-lang"),
+           i + 1 < CommandLine.arguments.count, CommandLine.arguments[i + 1] == "ja" {
+            s.lang = .ja
+        }
+        self.init(store: s, start: start)
     }
     required init?(coder: NSCoder) { fatalError() }
 
@@ -46,6 +52,10 @@ final class RootViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = Theme.sumi
         store.onChange = { [weak self] in self?.followStage() }
+        store.onToast = { [weak self] text in
+            guard let self else { return }
+            Toast.show(text, over: self.view)
+        }
         if demo.on {
             // 起動時からデモの場合。トグルで入ったときと同じ状態にしておかないと、
             // 立ち位置も時計も入らず「Looking for you…」のまま止まる。
@@ -58,6 +68,7 @@ final class RootViewController: UIViewController {
                 (self.current as? MapViewController)?.locationMoved()
                 (self.current as? CompassViewController)?.refresh()
             }
+            location.onError = { [weak self] m in self?.store.toast(m.0, m.1) }
             location.start()
         }
         show(screen, animated: false)
@@ -70,6 +81,7 @@ final class RootViewController: UIViewController {
         let want: Screen
         switch store.stage {
         case .planning: want = .map
+        case .choosingDirection: want = .directions
         case .picking:  want = .picks
         case .walking:  want = .compass
         case .arrived:  want = .arrival
@@ -123,6 +135,11 @@ final class RootViewController: UIViewController {
             m.onRewards = { [weak self] in self?.show(.rewards) }
             m.onDemoToggle = { [weak self] on in self?.setDemo(on) }
             return m
+        case .directions:
+            let d = DirectionsViewController(store: store)
+            d.onStart = { }                       // startCourse が stage を進めるので追わなくていい
+            d.onCancel = { [weak self] in self?.store.reset() }
+            return d
         case .picks:
             let p = PickViewController(store: store)
             p.onChoose = { [weak self] sp in self?.store.choose(sp) }

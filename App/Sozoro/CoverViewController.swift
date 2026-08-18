@@ -148,9 +148,9 @@ final class RewardsViewController: UIViewController {
         icon.translatesAutoresizingMaskIntoConstraints = false
         icon.heightAnchor.constraint(equalToConstant: 24).isActive = true
 
-        let t = makeLabel(r.title, Theme.body(11.5, .semibold),
+        let t = makeLabel(r.title(lang), Theme.body(11.5, .semibold),
                           got ? .white : Theme.muted, lines: 2, align: .center)
-        let c = makeLabel(r.condition, Theme.body(9.5),
+        let c = makeLabel(r.condition(lang), Theme.body(9.5),
                           got ? Theme.mutedDark : Theme.hairlineDk, lines: 3, align: .center)
         let box = stack(.vertical, 6, [icon, t, c])
         box.isLayoutMarginsRelativeArrangement = true

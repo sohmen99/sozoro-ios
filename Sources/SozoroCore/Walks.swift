@@ -60,39 +60,61 @@ public struct Reward: Identifiable, Sendable {
     public let symbol: String
     public let title: String
     public let condition: String
+    /// 日本語。ウェブ版の REWARDS が ja / cja で持っているのと同じ。
+    public let titleJA: String
+    public let conditionJA: String
     public let test: @Sendable (WalkStats) -> Bool
+
+    public func title(_ lang: Lang) -> String { lang == .ja ? titleJA : title }
+    public func condition(_ lang: Lang) -> String { lang == .ja ? conditionJA : condition }
 
     public static let all: [Reward] = [
         .init(id: "first",   symbol: "shoeprints.fill",   title: "First step",
-              condition: "Arrived once") { $0.count >= 1 },
+              condition: "Arrived once",
+              titleJA: "はじめの一歩", conditionJA: "1回 着いた") { $0.count >= 1 },
         .init(id: "three",   symbol: "arrow.triangle.branch", title: "Three turns",
-              condition: "Three walks") { $0.count >= 3 },
+              condition: "Three walks",
+              titleJA: "三度の角", conditionJA: "3回 歩いた") { $0.count >= 3 },
         .init(id: "ten",     symbol: "seal",              title: "Ten stamps",
-              condition: "Ten walks") { $0.count >= 10 },
+              condition: "Ten walks",
+              titleJA: "十の印", conditionJA: "10回 歩いた") { $0.count >= 10 },
         .init(id: "cross",   symbol: "point.topleft.down.to.point.bottomright.curvepath",
-              title: "Over the line", condition: "Arrived outside Taito") { $0.outside >= 1 },
+              title: "Over the line", condition: "Arrived outside Taito",
+              titleJA: "区をこえて", conditionJA: "台東区の外に 着いた") { $0.outside >= 1 },
         .init(id: "areas3",  symbol: "map",               title: "Three towns",
-              condition: "Three different areas") { $0.areas >= 3 },
+              condition: "Three different areas",
+              titleJA: "三つの町", conditionJA: "3つの地区に 着いた") { $0.areas >= 3 },
         .init(id: "areas5",  symbol: "safari",            title: "Five towns",
-              condition: "Five different areas") { $0.areas >= 5 },
+              condition: "Five different areas",
+              titleJA: "五つの町", conditionJA: "5つの地区に 着いた") { $0.areas >= 5 },
         .init(id: "ri",      symbol: "mountain.2",        title: "One ri",
-              condition: "4 km in total") { $0.totalM >= 4000 },
+              condition: "4 km in total",
+              titleJA: "一里", conditionJA: "のべ4km 歩いた") { $0.totalM >= 4000 },
         .init(id: "far",     symbol: "flag",              title: "Long haul",
-              condition: "2 km out in one walk") { $0.maxM >= 2000 },
+              condition: "2 km out in one walk",
+              titleJA: "遠出", conditionJA: "1回で2km 出た") { $0.maxM >= 2000 },
         .init(id: "against", symbol: "wind",              title: "Against the flow",
-              condition: "40 points quieter than the start") { $0.maxDispersion >= 40 },
+              condition: "40 points quieter than the start",
+              titleJA: "人波の逆へ", conditionJA: "出発地より40ポイント 空いた場所へ") { $0.maxDispersion >= 40 },
         .init(id: "ebb",     symbol: "water.waves",       title: "Ebb tide",
-              condition: "300 dispersion points") { $0.totalDispersion >= 300 },
+              condition: "300 dispersion points",
+              titleJA: "引き潮", conditionJA: "分散ポイント300") { $0.totalDispersion >= 300 },
         .init(id: "blind",   symbol: "eye.slash",         title: "No hints",
-              condition: "Arrived without a hint") { $0.noHint >= 1 },
+              condition: "Arrived without a hint",
+              titleJA: "ヒント無し", conditionJA: "ヒント無しで 着いた") { $0.noHint >= 1 },
         .init(id: "dawn",    symbol: "sunrise",           title: "Morning walker",
-              condition: "Arrived before 9") { $0.dawn >= 1 },
+              condition: "Arrived before 9",
+              titleJA: "朝の人", conditionJA: "9時前に 着いた") { $0.dawn >= 1 },
         .init(id: "dusk",    symbol: "moon.stars",        title: "Night walker",
-              condition: "Arrived after 19") { $0.dusk >= 1 },
-        .init(id: "both",    symbol: "square.grid.2x2",   title: "Both moods",
-              condition: "Arrived on food and on something old") { $0.kinds >= 2 },
+              condition: "Arrived after 19",
+              titleJA: "夜の人", conditionJA: "19時すぎに 着いた") { $0.dusk >= 1 },
+        // 気分は3つ。みどりを戻したので、2つでは埋まってしまう。
+        .init(id: "both",    symbol: "square.grid.2x2",   title: "All three moods",
+              condition: "Arrived on food, on something old and on green",
+              titleJA: "三つの気分", conditionJA: "3つの気分すべてで 着いた") { $0.kinds >= 3 },
         .init(id: "regular", symbol: "calendar",          title: "Regular",
-              condition: "Walked on three days") { $0.days >= 3 }
+              condition: "Walked on three days",
+              titleJA: "常連", conditionJA: "3日に分けて 歩いた") { $0.days >= 3 }
     ]
 
     public static func earned(_ walks: [Walk]) -> Set<String> {

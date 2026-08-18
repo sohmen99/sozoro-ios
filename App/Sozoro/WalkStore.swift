@@ -4,7 +4,8 @@ import SozoroCore
 /// 歩いている最中の状態をひとつに集める。ウェブ版で散らばっていた分。
 @MainActor
 final class WalkStore {
-    enum Stage { case planning, picking, walking, arrived }
+    /// choosingDirection は片道モードだけ通る。どの方角へ抜けるかを先に選ばせる。
+    enum Stage { case planning, choosingDirection, picking, walking, arrived }
     enum Mode { case wander, crossTown }
 
     var stage: Stage = .planning
@@ -31,6 +32,14 @@ final class WalkStore {
     let route = Route()
     let crowd = Crowd()
     let data = SozoroData.shared
+
+    /// 画面に一言出す。位置情報が切れた、駅が無い、といった一時的な知らせ。
+    /// 黙って何も起きないのがいちばん悪いので、口をひとつ持っておく。
+    var onToast: ((String) -> Void)?
+    func toast(_ en: String, _ ja: String) { onToast?(t(en, ja)) }
+
+    /// 表示の文言。英語が主で、日本語は切り替えたときだけ。
+    func t(_ en: String, _ ja: String) -> String { lang == .ja ? ja : en }
 
     var onChange: (() -> Void)?
     private func changed() { onChange?() }
@@ -72,7 +81,13 @@ final class WalkStore {
         origin = h
         switch mode {
         case .wander: dealThree(from: h)
-        case .crossTown: startCourse(from: h)
+        case .crossTown:
+            guard !route.options(from: h).isEmpty else {
+                toast("No station within walking range from here.",
+                      "ここから歩いて行ける駅が見つかりません。")
+                return
+            }
+            stage = .choosingDirection; changed()
         }
     }
 
@@ -82,12 +97,15 @@ final class WalkStore {
         var rng = SystemRandomNumberGenerator()
         let r = draw.pickMany(draw.candidates(ctx), ctx, using: &rng)
         guard !r.picks.isEmpty else {
-            note = "Nothing in range from here. Try the other kind of place."
+            note = t("Nothing in range from here. Try another kind of place.",
+                     "ここから届く場所がありません。ほかの気分も足してみてください。")
+            toast("Nothing in range from here.", "ここから届く場所がありません。")
             changed(); return
         }
         picks = r.picks
         note = r.widenedMinutes > 0
-            ? "Not much within 15 minutes — widened to ±\(r.widenedMinutes) min." : nil
+            ? t("Not much within 15 minutes — widened to ±\(r.widenedMinutes) min.",
+                "15分の範囲に少ないので、±\(r.widenedMinutes)分まで広げました。") : nil
         stage = .picking; changed()
     }
 
@@ -95,10 +113,15 @@ final class WalkStore {
         destination = s; origin = here; startedAt = Date(); hintsUsed = 0; stage = .walking; changed()
     }
 
-    func startCourse(from h: Coordinate) {
+    /// 方角の一覧。選ばせるのも、まかせるのも、ここから。
+    var directionOptions: [Route.Option] { here.map { route.options(from: $0) } ?? [] }
+
+    func startCourse(from h: Coordinate, with pick: Route.Option? = nil) {
         let opts = route.options(from: h)
-        guard let pick = opts.randomElement() else {
-            note = "No station within walking range from here."; changed(); return
+        guard let pick = pick ?? opts.randomElement() else {
+            toast("No station within walking range from here.",
+                  "ここから歩いて行ける駅が見つかりません。")
+            return
         }
         let c = route.build(from: h, to: pick)
         course = c; destination = c.stops.first; origin = h; startedAt = Date(); hintsUsed = 0
@@ -144,7 +167,7 @@ final class WalkStore {
         let d = Geo.distance(h, s.coordinate)
         let m = draw.config.minutes(forStraight: d)
         let f = DateFormatter(); f.dateFormat = "H:mm"
-        let back = f.string(from: Date().addingTimeInterval(Double(m * 2 + 10) * 60))
+        let back = f.string(from: clock().addingTimeInterval(Double(m * 2 + 10) * 60))
         return lang == .ja ? "\(format(d))・徒歩\(m)分・\(back)には戻れます"
                            : "\(format(d)) · \(m) min walk · back by \(back)"
     }
@@ -169,7 +192,7 @@ extension WalkStore {
         s.here = Coordinate(lat: 35.7138, lon: 139.7772)
         s.origin = s.here
         switch stage {
-        case .planning: break
+        case .planning, .choosingDirection: s.stage = stage
         case .picking:
             var ctx = Draw.Context(origin: s.here!, kinds: s.kinds, now: Date())
             var rng = SystemRandomNumberGenerator()

@@ -6,8 +6,9 @@ import SozoroCore
 final class LandmarkDetailView: UIView {
     var onClose: (() -> Void)?
 
-    init(landmark: Landmark, crowd: Crowd, now: Date) {
+    init(landmark: Landmark, crowd: Crowd, now: Date, lang: Lang = .en) {
         super.init(frame: .zero)
+        func t(_ en: String, _ jp: String) -> String { lang == .ja ? jp : en }
         backgroundColor = Theme.washi
         layer.cornerRadius = 20
         layer.cornerCurve = .continuous
@@ -15,9 +16,14 @@ final class LandmarkDetailView: UIView {
         let spot = landmark.asSpot
         let v = crowd.level(spot, at: now)
         let band = Crowd.band(v)
-        let chipText = ["quiet": "Quiet", "mid": "Busy", "busy": "Packed"][band.rawValue]!
-        let verdict  = ["quiet": "Quiet right now", "mid": "Fairly busy right now",
-                        "busy": "Packed right now"][band.rawValue]!
+        let chipText = [
+            "quiet": t("Quiet", "空いている"), "mid": t("Busy", "やや混雑"), "busy": t("Packed", "混雑")
+        ][band.rawValue]!
+        let verdict = [
+            "quiet": t("Quiet right now", "いまは空いています"),
+            "mid":   t("Fairly busy right now", "いまはやや混んでいます"),
+            "busy":  t("Packed right now", "いまは混んでいます")
+        ][band.rawValue]!
         let colour = Theme.crowdColour(v)
 
         let close = UIButton(type: .system)
@@ -31,8 +37,8 @@ final class LandmarkDetailView: UIView {
         scene.heightAnchor.constraint(equalToConstant: 116).isActive = true
 
         let icon = IconView(landmark.icon, size: 26, colour: Theme.ink)
-        let name = makeLabel(landmark.en, Theme.display(21), Theme.ink)
-        let ja = makeLabel(landmark.ja, Theme.body(11.5), Theme.muted)
+        let name = makeLabel(lang == .ja ? landmark.ja : landmark.en, Theme.display(21), Theme.ink)
+        let ja = makeLabel(lang == .ja ? landmark.en : landmark.ja, Theme.body(11.5), Theme.muted)
 
         let now100 = makeLabel("\(v)", Theme.mono(34, .semibold), colour)
         let pct = makeLabel("%", Theme.mono(13), colour)
@@ -48,22 +54,27 @@ final class LandmarkDetailView: UIView {
         let clears = crowd.clearsAt(spot, from: now)
         let head: String, sub: String
         if let c = clears {
-            head = "Clears from about \(c):00"
-            sub = "The draw already prefers the quiet side of the map."
+            head = t("Clears from about \(c):00", "\(c)時ごろから空きはじめます")
+            sub = t("The draw already prefers the quiet side of the map.",
+                    "抽選はもともと、空いている側へ寄せてあります。")
         } else if v < 40 {
-            head = "Quiet already"
-            sub = "Good time to be here — or to walk somewhere further out."
+            head = t("Quiet already", "いまでも空いています")
+            sub = t("Good time to be here — or to walk somewhere further out.",
+                    "いま来るのに向いています。もっと外へ歩いてもいい。")
         } else {
-            head = "Stays busy for the rest of today"
-            sub = "Walking out is the faster option."
+            head = t("Stays busy for the rest of today", "今日はこのあとも混んだままです")
+            sub = t("Walking out is the faster option.", "外へ歩いたほうが早い。")
         }
 
         let wd = Calendar.current.component(.weekday, from: now)
         let ff = Int((crowd.footfall(at: landmark.coordinate, weekend: wd == 1 || wd == 7) * 100).rounded())
-        let meta = makeLabel(
+        let meta = makeLabel(t(
             "Three layers. Measured footfall here is \(ff) on a 0–100 scale "
             + "(MLIT people-flow open data, 1 km mesh, Oct 2019). "
             + "The pull of the place itself and the shape of its day are still estimated.",
+            "3つの層でできています。ここの人出の実測は0〜100で\(ff)"
+            + "（国土交通省 全国の人流オープンデータ、1kmメッシュ、2019年10月）。"
+            + "その場所の集客力と一日のかたちは、まだ推定です。"),
             Theme.body(10.5), Theme.muted, lines: 0)
 
         let top = stack(.horizontal, 11, [icon, stack(.vertical, 1, [name, ja]), UIView(), close], align: .center)

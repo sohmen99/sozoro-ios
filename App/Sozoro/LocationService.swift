@@ -7,6 +7,8 @@ import SozoroCore
 final class LocationService: NSObject {
     /// 位置か方位が動いたら呼ぶ。UIKit なので Combine は使わない。
     var onUpdate: ((Coordinate?, Double?) -> Void)?
+    /// 取れなかったときの一言。英語と日本語で持つ。黙って動かないのがいちばん悪い。
+    var onError: (((String, String)) -> Void)?
     private(set) var coordinate: Coordinate?
     private(set) var accuracy: Double?
     /// 真北からの度。取れないときは nil にして、文字盤を北固定にする。
@@ -29,6 +31,8 @@ final class LocationService: NSObject {
         case .notDetermined: manager.requestWhenInUseAuthorization()
         case .denied, .restricted:
             message = "Location is switched off. Turn it on in Settings."
+            onError?(("Location is off. Turn it on in Settings to be sent anywhere.",
+                      "位置情報が切れています。設定から入れてください。"))
         default: break
         }
         manager.startUpdatingLocation()
@@ -67,6 +71,10 @@ extension LocationService: CLLocationManagerDelegate {
     }
 
     nonisolated func locationManager(_ m: CLLocationManager, didFailWithError e: Error) {
-        Task { @MainActor in self.message = "No fix yet. This works better outdoors." }
+        Task { @MainActor in
+            self.message = "No fix yet. This works better outdoors."
+            self.onError?(("No fix yet. This works better outdoors.",
+                           "現在地がまだ取れていません。外のほうがよく入ります。"))
+        }
     }
 }
