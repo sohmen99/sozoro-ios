@@ -6,14 +6,19 @@ import SozoroCore
 /// 基準地点に色の丸をぼかして重ね、掛け算で合成する。
 /// 点だけだと「どのあたりが混んでいるか」が読めないので、面で出す。
 final class HeatOverlay: NSObject, MKOverlay {
-    let blobs: [(coordinate: CLLocationCoordinate2D, crowd: Int, pop: Double)]
+    let blobs: [(coordinate: CLLocationCoordinate2D, crowd: Int, pop: Double, share: Double)]
     let coordinate: CLLocationCoordinate2D
     let boundingMapRect: MKMapRect
 
     init(landmarks: [Landmark], crowd: Crowd, now: Date) {
-        blobs = landmarks.map {
-            (CLLocationCoordinate2D(latitude: $0.lat, longitude: $0.lon),
-             crowd.level($0.asSpot, at: now), $0.pop)
+        let values = landmarks.map { crowd.level($0.asSpot, at: now) }
+        // 絶対値で切ると、深夜は全地点が45を割って層ごと消える（0〜6時と23時）。
+        // その時刻のいちばん混んでいる所を基準にして、比で描く。
+        // いつ見ても「どこが相対的に混んでいるか」は出る。
+        let peak = Double(max(values.max() ?? 1, 1))
+        blobs = zip(landmarks, values).map {
+            (CLLocationCoordinate2D(latitude: $0.0.lat, longitude: $0.0.lon),
+             $0.1, $0.0.pop, Double($0.1) / peak)
         }
         coordinate = CLLocationCoordinate2D(latitude: 35.7180, longitude: 139.7880)
         let c = MKMapPoint(coordinate)
@@ -27,18 +32,18 @@ final class HeatOverlay: NSObject, MKOverlay {
 final class HeatRenderer: MKOverlayRenderer {
     override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in ctx: CGContext) {
         guard let heat = overlay as? HeatOverlay else { return }
-        // 「どこが混んでいるか」を出す層なので、空いている地点は描かない。
-        // 全部にじませると地図全体が色に沈んで、赤が読めなくなる。
+        // 下の2割は描かない。全部にじませると地図が色に沈んで、濃い所が読めなくなる。
         ctx.setBlendMode(.multiply)
-        for b in heat.blobs where b.crowd > 45 {
+        for b in heat.blobs where b.share > 0.45 {
             let p = point(for: MKMapPoint(b.coordinate))
             // 集客力が大きいほど広くにじむ。混んでいるほど濃い。
             // 集客力が大きいほど広くにじむ。地図の縮尺に合わせて実距離で持つ。
             let radius = CGFloat((420 + 900 * b.pop) * MKMapPointsPerMeterAtLatitude(35.718))
-            // 46〜75 は琥珀、76以上は朱。混むほど濃く。
+            // 色はその地点の絶対値で決める（空き=緑・ふつう=琥珀・混雑=朱）。
+            // 濃さはその時刻の最大との比で決める。だから深夜でも濃淡は出る。
             let c = Theme.crowdColour(b.crowd)
-            let over = CGFloat(b.crowd - 45) / 55                 // 0〜1
-            let alpha = 0.12 + 0.40 * min(1, max(0, over))
+            let t = (b.share - 0.45) / 0.55                       // 0〜1
+            let alpha = 0.10 + 0.42 * CGFloat(min(1, max(0, t)))
             let colours = [c.withAlphaComponent(alpha).cgColor,
                            c.withAlphaComponent(0).cgColor] as CFArray
             guard let g = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),

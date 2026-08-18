@@ -42,8 +42,7 @@ final class MapViewController: UIViewController {
             LandmarkPin(landmark: $0, crowd: store.crowd.level($0.asSpot, at: store.clock()))
         })
 
-        map.addOverlay(HeatOverlay(landmarks: Landmark.all, crowd: store.crowd, now: store.clock()),
-                       level: .aboveRoads)
+        refreshHeat()
 
         // 遊べる範囲のちょい外までで止める。世界地図まで引けると、迷子になる。
         let play = MKCoordinateRegion(
@@ -92,7 +91,7 @@ final class MapViewController: UIViewController {
         ])
 
         if demo.on {
-            panel.onChange = { [weak self] in self?.locationMoved() }
+            panel.onChange = { [weak self] in self?.locationMoved(); self?.refreshHeat() }
             view.addSubview(panel)
             panel.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
@@ -131,6 +130,18 @@ final class MapViewController: UIViewController {
         store.here = Coordinate(lat: c.latitude, lon: c.longitude)
         moveMeMarker()
         sheet.refresh()
+    }
+
+    /// 時刻が変わると混み具合も変わる。にじみも基準地点の点も入れ替える。
+    func refreshHeat() {
+        map.overlays.forEach { map.removeOverlay($0) }
+        map.addOverlay(HeatOverlay(landmarks: Landmark.all, crowd: store.crowd, now: store.clock()),
+                       level: .aboveRoads)
+        let pins = map.annotations.compactMap { $0 as? LandmarkPin }
+        map.removeAnnotations(pins)
+        map.addAnnotations(Landmark.all.map {
+            LandmarkPin(landmark: $0, crowd: store.crowd.level($0.asSpot, at: store.clock()))
+        })
     }
 
     func locationMoved() {

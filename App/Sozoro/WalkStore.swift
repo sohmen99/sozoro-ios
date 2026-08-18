@@ -20,6 +20,8 @@ final class WalkStore {
     var note: String?
     var startedAt: Date?
     var hintsUsed = 0
+    /// 出発地よりどれだけ空いた場所へ出たか。人流誘導の成果そのもの。
+    var dispersion = 0
     /// いま何時として扱うか。デモではここを差し替える。
     var clock: () -> Date = { Date() }
     /// 表示の言語。英語が主。カバーで切り替える。

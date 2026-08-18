@@ -118,6 +118,7 @@ final class RootViewController: UIViewController {
             return c
         case .arrival:
             let a = ArrivalViewController(store: store)
+            a.freshSeals = freshSeals
             a.onKeep = { [weak self] in self?.store.next() }
             a.onStop = { [weak self] in self?.store.reset() }
             a.onRewards = { [weak self] in self?.show(.rewards) }
@@ -131,6 +132,7 @@ final class RootViewController: UIViewController {
 
     /// 着いたら記録を1つ残してから到着画面へ。印はここで増える。
     private func finish() {
+        let before = WalkLog.shared.earned
         if let d = store.destination, let o = store.origin {
             let destCrowd = store.crowd.level(d, at: demo.on ? demo.now : Date())
             let originSpot = Spot(id: "origin", name: "origin", coordinate: o,
@@ -143,9 +145,14 @@ final class RootViewController: UIViewController {
                 destName: d.name, destKind: d.kind,
                 destArea: d.category, destOutsideTaito: false,
                 hintsUsed: store.hintsUsed, demo: demo.on))
+            store.dispersion = max(0, originCrowd - destCrowd)
+        }
+        freshSeals = Reward.all.filter {
+            WalkLog.shared.earned.contains($0.id) && !before.contains($0.id)
         }
         store.arrive()
     }
+    private var freshSeals: [Reward] = []
 
     private func setDemo(_ on: Bool) {
         demo.on = on
