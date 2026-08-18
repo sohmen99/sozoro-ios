@@ -167,6 +167,7 @@ final class CompassViewController: UIViewController {
     var onGiveUp: (() -> Void)?
     /// デモのときだけ出す。行き先へ自動で歩く。
     var demoWalk: (() -> Void)?
+    private let hintCard = HintCard()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -178,7 +179,21 @@ final class CompassViewController: UIViewController {
         cfg.cornerStyle = .large
         cfg.contentInsets = .init(top: 13, leading: 16, bottom: 13, trailing: 16)
         arriveButton.configuration = cfg
-        arriveButton.addAction(UIAction { [weak self] _ in self?.onArrive?() }, for: .touchUpInside)
+        // 着いていないのに押して終わってしまうのを防ぐ。遠いときだけ確認する。
+        arriveButton.addAction(UIAction { [weak self] _ in
+            guard let self else { return }
+            if self.store.arrived { self.onArrive?(); return }
+            let left = Int((self.store.remaining ?? 0).rounded())
+            let a = UIAlertController(
+                title: "You are still \(left) m away",
+                message: "Ending here counts as arriving. Do it anyway?",
+                preferredStyle: .alert)
+            a.addAction(UIAlertAction(title: "Keep walking", style: .cancel))
+            a.addAction(UIAlertAction(title: "End here", style: .destructive) { _ in
+                self.onArrive?()
+            })
+            self.present(a, animated: true)
+        }, for: .touchUpInside)
 
         let giveUp = UIButton(type: .system)
         giveUp.setTitle("Give up", for: .normal)
@@ -194,7 +209,12 @@ final class CompassViewController: UIViewController {
         ])
         metrics.distribution = .fillEqually
 
-        var rows: [UIView] = [stack(.vertical, 5, [head, sub]), dial, metrics, arriveButton]
+        hintCard.onUse = { [weak self] in
+            guard let self else { return }
+            self.store.hintsUsed = min(2, self.store.hintsUsed + 1)
+            self.refresh()
+        }
+        var rows: [UIView] = [stack(.vertical, 5, [head, sub]), dial, metrics, hintCard, arriveButton]
         if demoWalk != nil {
             let w = UIButton(type: .system)
             w.setTitle("Walk to it (demo)", for: .normal)
@@ -242,6 +262,7 @@ final class CompassViewController: UIViewController {
             ? "Follow the green tip. Something quiet, \(dir) of here. The dial is north-up."
             : "Follow the green tip. Something quiet, \(dir) of here."
 
+        hintCard.render(store: store)
         let there = store.arrived
         arriveButton.configuration?.attributedTitle = AttributedString(
             there ? "You made it" : "I'm here",
@@ -251,3 +272,63 @@ final class CompassViewController: UIViewController {
     }
 }
 
+/// ヒントは2回。迷って欲しくなったら使う。
+/// 1回目で種類、2回目で混み具合と頭の一文字。名前そのものは最後まで出さない。
+final class HintCard: UIView {
+    var onUse: (() -> Void)?
+    private let button = UIButton(type: .system)
+    private let body = UIStackView()
+    private let empty = makeLabel("Two hints. Spend them when you are lost enough to want one.",
+                                  Theme.body(11.5), Theme.mutedDark, lines: 0)
+
+    init() {
+        super.init(frame: .zero)
+        backgroundColor = Theme.sumi2
+        layer.cornerRadius = 12
+        layer.cornerCurve = .continuous
+        layer.borderWidth = 1
+        layer.borderColor = Theme.hairlineDk.cgColor
+
+        var c = UIButton.Configuration.plain()
+        c.image = UIImage(systemName: "lightbulb")
+        c.imagePadding = 6
+        c.baseForegroundColor = Theme.aiLight
+        c.contentInsets = .init(top: 8, leading: 10, bottom: 8, trailing: 10)
+        button.configuration = c
+        button.addAction(UIAction { [weak self] _ in self?.onUse?() }, for: .touchUpInside)
+
+        body.axis = .vertical; body.spacing = 5
+        let col = stack(.vertical, 8, [
+            stack(.horizontal, 8, [UIView(), button], align: .center), empty, body
+        ])
+        addSubview(col)
+        col.pin(to: self, insets: .init(top: 10, left: 13, bottom: 12, right: 13))
+    }
+    required init?(coder: NSCoder) { fatalError() }
+
+    func render(store: WalkStore) {
+        body.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        let used = store.hintsUsed
+        button.configuration?.attributedTitle = AttributedString(
+            used >= 2 ? "No hints left" : "Use a hint (\(2 - used) left)",
+            attributes: AttributeContainer([.font: Theme.body(12, .semibold)]))
+        button.isEnabled = used < 2
+        button.alpha = used < 2 ? 1 : 0.45
+        empty.isHidden = used > 0
+        guard let d = store.destination else { return }
+        if used >= 1 { body.addArrangedSubview(line("What it is", d.category)) }
+        if used >= 2 {
+            let v = store.crowd.level(d, at: store.clock())
+            body.addArrangedSubview(line("How busy", "\(v)% of peak"))
+            body.addArrangedSubview(line("First letter", String(d.name.prefix(1)) + "…"))
+        }
+    }
+
+    private func line(_ k: String, _ v: String) -> UIView {
+        let key = UILabel(); key.attributedText = Theme.label(k)
+        key.setContentHuggingPriority(.required, for: .horizontal)
+        return stack(.horizontal, 10, [key, UIView(),
+                                       makeLabel(v, Theme.body(12.5, .semibold), .white)],
+                     align: .firstBaseline)
+    }
+}

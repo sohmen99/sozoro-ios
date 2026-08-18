@@ -43,13 +43,18 @@ final class RootViewController: UIViewController {
     }
 
     /// 歩く状態が変わったら、対応する画面へ移る。
+    /// 気分や歩き方を変えただけのときは、同じ画面のままにする。
+    /// 作り直すと地図が再描画されて、見ていた場所が飛ぶ。
     private func followStage() {
+        let want: Screen
         switch store.stage {
-        case .planning: show(.map)
-        case .picking:  show(.picks)
-        case .walking:  show(.compass)
-        case .arrived:  show(.arrival)
+        case .planning: want = .map
+        case .picking:  want = .picks
+        case .walking:  want = .compass
+        case .arrived:  want = .arrival
         }
+        guard want != screen else { return }
+        show(want)
     }
 
     func show(_ s: Screen, animated: Bool = true) {
@@ -133,7 +138,7 @@ final class RootViewController: UIViewController {
                 dispersion: max(0, originCrowd - destCrowd),
                 destName: d.name, destKind: d.kind,
                 destArea: d.category, destOutsideTaito: false,
-                hintsUsed: 0, demo: demo.on))
+                hintsUsed: store.hintsUsed, demo: demo.on))
         }
         store.arrive()
     }

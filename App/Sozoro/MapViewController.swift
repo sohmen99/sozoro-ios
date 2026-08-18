@@ -29,7 +29,7 @@ final class MapViewController: UIViewController {
 
         map.mapType = .mutedStandard
         map.pointOfInterestFilter = .excludingAll
-        map.showsUserLocation = !demo.on
+        map.showsUserLocation = false   // 自前の印を出す
         map.region = MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: store.here?.lat ?? 35.7138,
                                            longitude: store.here?.lon ?? 139.7772),
@@ -41,6 +41,9 @@ final class MapViewController: UIViewController {
         map.addAnnotations(Landmark.all.map {
             LandmarkPin(landmark: $0, crowd: store.crowd.level($0.asSpot, at: store.clock()))
         })
+
+        map.addOverlay(HeatOverlay(landmarks: Landmark.all, crowd: store.crowd, now: store.clock()),
+                       level: .aboveRoads)
 
         // 遊べる範囲のちょい外までで止める。世界地図まで引けると、迷子になる。
         let play = MKCoordinateRegion(
@@ -104,28 +107,36 @@ final class MapViewController: UIViewController {
     }
 
     private var detail: LandmarkDetailView?
-    private var meMarker: MKPointAnnotation?
+    private var meMarker: MeAnnotation?
     private func addMeMarker() {
-        guard demo.on, let h = store.here else { return }
-        let a = MKPointAnnotation()
-        a.coordinate = CLLocationCoordinate2D(latitude: h.lat, longitude: h.lon)
+        guard let h = store.here else { return }
+        let a = MeAnnotation(coordinate: CLLocationCoordinate2D(latitude: h.lat, longitude: h.lon),
+                             demo: demo.on)
         map.addAnnotation(a)
         meMarker = a
+    }
+    /// 現在地だけ動かす。地図を作り直さない。
+    private func moveMeMarker() {
+        guard let h = store.here else { return }
+        guard let m = meMarker, m.demo == demo.on else {
+            meMarker.map { map.removeAnnotation($0) }
+            addMeMarker(); return
+        }
+        m.coordinate = CLLocationCoordinate2D(latitude: h.lat, longitude: h.lon)
     }
 
     @objc private func tapped(_ g: UITapGestureRecognizer) {
         let p = g.location(in: map)
         let c = map.convert(p, toCoordinateFrom: map)
         store.here = Coordinate(lat: c.latitude, lon: c.longitude)
-        meMarker.map { map.removeAnnotation($0) }
-        addMeMarker()
+        moveMeMarker()
         sheet.refresh()
     }
 
     func locationMoved() {
         sheet.refresh()
         refreshOffArea()
-        if demo.on { meMarker.map { map.removeAnnotation($0) }; addMeMarker() }
+        moveMeMarker()
     }
 
     /// 区の外にいるとき。行き先の母集団が台東区と荒川区に寄っているので、
@@ -211,7 +222,18 @@ final class LandmarkPin: NSObject, MKAnnotation {
 }
 
 extension MapViewController: MKMapViewDelegate {
+    func mapView(_ m: MKMapView, rendererFor o: MKOverlay) -> MKOverlayRenderer {
+        o is HeatOverlay ? HeatRenderer(overlay: o) : MKOverlayRenderer(overlay: o)
+    }
+
     func mapView(_ m: MKMapView, viewFor a: MKAnnotation) -> MKAnnotationView? {
+        if a is MeAnnotation {
+            let id = "me"
+            let v = m.dequeueReusableAnnotationView(withIdentifier: id) as? MeView
+                ?? MeView(annotation: a, reuseIdentifier: id)
+            v.annotation = a
+            return v
+        }
         if let p = a as? LandmarkPin {
             let id = "landmark"
             let v = m.dequeueReusableAnnotationView(withIdentifier: id)
@@ -219,19 +241,26 @@ extension MapViewController: MKMapViewDelegate {
             v.annotation = a
             v.canShowCallout = false
             v.subviews.forEach { $0.removeFromSuperview() }
+            // ウェブ版と同じ。白い丸に線画、右上に混み具合の点。
             v.frame = CGRect(x: 0, y: 0, width: 34, height: 34)
-            v.backgroundColor = Theme.washi
+            v.backgroundColor = .white
             v.layer.cornerRadius = 17
-            v.layer.borderWidth = 2
-            v.layer.borderColor = Theme.crowdColour(p.crowd).cgColor
-            v.layer.shadowColor = UIColor.black.cgColor
-            v.layer.shadowOpacity = 0.18
+            v.layer.borderWidth = 1
+            v.layer.borderColor = Theme.hairline.cgColor
+            v.layer.shadowColor = UIColor(hex: 0x14171C).cgColor
+            v.layer.shadowOpacity = 0.16
             v.layer.shadowRadius = 3
-            v.layer.shadowOffset = CGSize(width: 0, height: 1)
-            let icon = IconView(p.landmark.icon, size: 18, colour: Theme.ink)
+            v.layer.shadowOffset = CGSize(width: 0, height: 2)
+            let icon = IconView(p.landmark.icon, size: 17, colour: Theme.ink2)
             icon.center = CGPoint(x: 17, y: 17)
             icon.translatesAutoresizingMaskIntoConstraints = true
             v.addSubview(icon)
+            let dot = UIView(frame: CGRect(x: 23, y: -2, width: 11, height: 11))
+            dot.backgroundColor = Theme.crowdColour(p.crowd)
+            dot.layer.cornerRadius = 5.5
+            dot.layer.borderWidth = 2
+            dot.layer.borderColor = UIColor.white.cgColor
+            v.addSubview(dot)
             return v
         }
         return nil

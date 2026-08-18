@@ -19,6 +19,7 @@ final class WalkStore {
     var stops: [Spot] = []
     var note: String?
     var startedAt: Date?
+    var hintsUsed = 0
     /// いま何時として扱うか。デモではここを差し替える。
     var clock: () -> Date = { Date() }
 
@@ -86,7 +87,7 @@ final class WalkStore {
     }
 
     func choose(_ s: Spot) {
-        destination = s; origin = here; startedAt = Date(); stage = .walking; changed()
+        destination = s; origin = here; startedAt = Date(); hintsUsed = 0; stage = .walking; changed()
     }
 
     func startCourse(from h: Coordinate) {
@@ -95,7 +96,7 @@ final class WalkStore {
             note = "No station within walking range from here."; changed(); return
         }
         let c = route.build(from: h, to: pick)
-        course = c; destination = c.stops.first; origin = h; startedAt = Date()
+        course = c; destination = c.stops.first; origin = h; startedAt = Date(); hintsUsed = 0
         stage = .walking; changed()
     }
 
@@ -107,7 +108,7 @@ final class WalkStore {
     func next() {
         if var c = course, c.remaining > 0 {
             c.index += 1; course = c
-            destination = c.stops[c.index]; origin = here; startedAt = Date()
+            destination = c.stops[c.index]; origin = here; startedAt = Date(); hintsUsed = 0
             stage = .walking; changed(); return
         }
         course = nil
