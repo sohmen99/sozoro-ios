@@ -233,11 +233,9 @@ final class ArrivalViewController: UIViewController {
         let walked = store.origin.flatMap { o in
             store.destination.map { Geo.distance(o, $0.coordinate) * store.draw.config.detour }
         } ?? 0
-        let quieter = store.dispersion
         let stats = stack(.horizontal, 0, [
             metric(String(format: "%.1f", walked / 1000), "km", ja ? "あるいた" : "walked"),
-            metric("\(store.stops.count)", "", ja ? "たちよった" : "stops"),
-            metric("\(quieter)", "%", ja ? "すいてた" : "quieter", tint: Theme.quietDk)
+            metric("\(store.stops.count)", "", ja ? "たちよった" : "stops")
         ])
         stats.distribution = .fillEqually
 
@@ -371,8 +369,8 @@ final class ArrivalViewController: UIViewController {
         let km = String(format: "%.1f", (store.origin.map {
             Geo.distance($0, d.coordinate) * store.draw.config.detour } ?? 0) / 1000)
         let text = store.lang == .ja
-            ? "「\(store.name(d))」に着きました。\(km)km 歩いて、出発地点より \(store.dispersion)% 空いている場所へ。#Tokyosozoro"
-            : "Arrived at \(store.name(d)). \(km) km on foot, to somewhere \(store.dispersion)% quieter than where I set off. #Tokyosozoro"
+            ? "「\(store.name(d))」に着きました。\(km)km 歩いて、行き先は着くまで伏せたまま。#Tokyosozoro"
+            : "Arrived at \(store.name(d)). \(km) km on foot, and I did not know where until I got there. #Tokyosozoro"
         let img = ShareCard.render(store: store, destination: d)
         let vc = UIActivityViewController(activityItems: [text, img], applicationActivities: nil)
         vc.popoverPresentationController?.sourceView = view

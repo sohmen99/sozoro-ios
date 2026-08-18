@@ -19,10 +19,11 @@ final class LandmarkDetailView: UIView {
         let chipText = [
             "quiet": t("Quiet", "空いている"), "mid": t("Busy", "やや混雑"), "busy": t("Packed", "混雑")
         ][band.rawValue]!
+        // 断定しない。実測なのは広域の人出だけで、地点ごとの数字は推定。
         let verdict = [
-            "quiet": t("Quiet right now", "いまは空いています"),
-            "mid":   t("Fairly busy right now", "いまはやや混んでいます"),
-            "busy":  t("Packed right now", "いまは混んでいます")
+            "quiet": t("Probably quiet", "空いていそう"),
+            "mid":   t("Probably fairly busy", "やや混んでいそう"),
+            "busy":  t("Probably packed", "混雑していそう")
         ][band.rawValue]!
         let colour = Theme.crowdColour(v)
 
@@ -40,8 +41,12 @@ final class LandmarkDetailView: UIView {
         let name = makeLabel(lang == .ja ? landmark.ja : landmark.en, Theme.display(21), Theme.ink)
         let ja = makeLabel(lang == .ja ? landmark.en : landmark.ja, Theme.body(11.5), Theme.muted)
 
+        // 「およそ」を付ける。推定の数字を実測の顔で出さない。
+        let approx = makeLabel("~", Theme.mono(20, .semibold), colour)
         let now100 = makeLabel("\(v)", Theme.mono(34, .semibold), colour)
         let pct = makeLabel("%", Theme.mono(13), colour)
+        let ofPeak = UILabel()
+        ofPeak.attributedText = Theme.label(t("of peak · estimate", "ピーク比・予想"))
         let chip = pill(chipText, colour)
         let verdictLabel = makeLabel(verdict, Theme.body(13.5, .semibold), Theme.ink)
 
@@ -54,15 +59,15 @@ final class LandmarkDetailView: UIView {
         let clears = crowd.clearsAt(spot, from: now)
         let head: String, sub: String
         if let c = clears {
-            head = t("Clears from about \(c):00", "\(c)時ごろから空きはじめます")
+            head = t("Should clear from about \(c):00", "\(c)時ごろから空きはじめる見込み")
             sub = t("The draw already prefers the quiet side of the map.",
                     "抽選はもともと、空いている側へ寄せてあります。")
         } else if v < 40 {
-            head = t("Quiet already", "いまでも空いています")
+            head = t("Quiet already, by our estimate", "いまでも空いている見込み")
             sub = t("Good time to be here — or to walk somewhere further out.",
                     "いま来るのに向いています。もっと外へ歩いてもいい。")
         } else {
-            head = t("Stays busy for the rest of today", "今日はこのあとも混んだままです")
+            head = t("Likely busy for the rest of today", "今日はこのあとも混んでいそうです")
             sub = t("Walking out is the faster option.", "外へ歩いたほうが早い。")
         }
 
@@ -78,9 +83,9 @@ final class LandmarkDetailView: UIView {
             Theme.body(10.5), Theme.muted, lines: 0)
 
         let top = stack(.horizontal, 11, [icon, stack(.vertical, 1, [name, ja]), UIView(), close], align: .center)
-        let numbers = stack(.horizontal, 4, [now100, pct, UIView(), chip], align: .lastBaseline)
+        let numbers = stack(.horizontal, 4, [approx, now100, pct, UIView(), chip], align: .lastBaseline)
         let col = stack(.vertical, 14, [
-            top, scene, numbers, verdictLabel, chart,
+            top, scene, stack(.vertical, 2, [numbers, ofPeak]), verdictLabel, chart,
             stack(.vertical, 3, [makeLabel(head, Theme.body(13, .semibold), Theme.ink),
                                  makeLabel(sub, Theme.body(11.5), Theme.muted, lines: 0)]),
             rule(), meta

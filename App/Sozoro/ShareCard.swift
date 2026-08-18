@@ -44,8 +44,8 @@ enum ShareCard {
                     withAttributes: [.font: Theme.body(36),
                                      .foregroundColor: Theme.mutedDark, .paragraphStyle: p])
             }
-            stat(size.width * 0.28, km + "km", ja ? "あるいた" : "walked")
-            stat(size.width * 0.72, "\(store.dispersion)%", ja ? "すいてた" : "quieter")
+            stat(size.width / 2, km + "km", ja ? "あるいた" : "walked")
+
 
             text(ja ? "上野・浅草から、人の少ない側へ歩く"
                     : "Walking away from the crowd, out of Ueno and Asakusa",

@@ -26,7 +26,7 @@ final class MapFoot: UIView {
 
         let ja = lang == .ja
         let head = UILabel()
-        head.attributedText = Theme.label(ja ? "いまの混雑" : "Crowd now")
+        head.attributedText = Theme.label(ja ? "混雑の予想" : "Crowd, estimated")
 
         let keys = stack(.horizontal, 9, [
             key(Theme.quiet, ja ? "空" : "Quiet"),

@@ -375,7 +375,7 @@ final class HintCard: UIView {
         if used >= 2 {
             let v = store.crowd.level(d, at: store.clock())
             body.addArrangedSubview(line(store.t("How busy", "混み具合"),
-                                         store.t("\(v)% of peak", "ピーク比 \(v)%")))
+                                         store.t("~\(v)% of peak, estimated", "ピーク比 およそ\(v)%（予想）")))
             body.addArrangedSubview(line(store.t("First letter", "頭の一文字"), store.firstLetter(d)))
         }
     }
