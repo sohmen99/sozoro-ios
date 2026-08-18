@@ -41,9 +41,37 @@ enum Theme {
             .kern: 1.5, .foregroundColor: Theme.muted
         ])
     }
-    /// 混雑の三段。ウェブ版と同じ切り方。
+    /// 混雑の三段。地点の印とチップに使う。ウェブ版と同じ切り方。
     static func crowdColour(_ v: Int) -> UIColor {
         v <= 45 ? quiet : (v <= 75 ? mid : busy)
+    }
+
+    /// ヒートの階調。いちばん混んでいるところが赤紫、空くほど黄色へ抜ける。
+    /// 三段のチップ色を流用すると、空いている時間帯に地図が緑に沈む。
+    /// ここは「熱」の色として別に持つ。
+    private static let heatRamp: [(CGFloat, UIColor)] = [
+        (0.00, UIColor(hex: 0xF0DC72)),   // 黄
+        (0.35, UIColor(hex: 0xE8A93C)),   // 山吹
+        (0.60, UIColor(hex: 0xDD6B2B)),   // 橙
+        (0.80, UIColor(hex: 0xC63A2C)),   // 朱
+        (1.00, UIColor(hex: 0x8E1E5E))    // 赤紫
+    ]
+
+    /// 0〜1 の熱さから色を引く。あいだは線形に混ぜる。
+    static func heatColour(_ t: CGFloat) -> UIColor {
+        let x = min(1, max(0, t))
+        for i in 1..<heatRamp.count {
+            let (p1, c1) = heatRamp[i - 1], (p2, c2) = heatRamp[i]
+            guard x <= p2 else { continue }
+            let k = p2 == p1 ? 0 : (x - p1) / (p2 - p1)
+            var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
+            var r2: CGFloat = 0, g2: CGFloat = 0, b2: CGFloat = 0, a2: CGFloat = 0
+            c1.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
+            c2.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
+            return UIColor(red: r1 + (r2 - r1) * k, green: g1 + (g2 - g1) * k,
+                           blue: b1 + (b2 - b1) * k, alpha: 1)
+        }
+        return heatRamp.last!.1
     }
 }
 

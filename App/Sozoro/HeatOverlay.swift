@@ -9,6 +9,8 @@ final class HeatOverlay: NSObject, MKOverlay {
     let blobs: [(coordinate: CLLocationCoordinate2D, crowd: Int, pop: Double, share: Double)]
     let coordinate: CLLocationCoordinate2D
     let boundingMapRect: MKMapRect
+    /// その時刻がそもそも混んでいるか。深夜は層ごと薄くする。
+    private(set) var damping: Double = 1
 
     init(landmarks: [Landmark], crowd: Crowd, now: Date) {
         let values = landmarks.map { crowd.level($0.asSpot, at: now) }
@@ -16,6 +18,10 @@ final class HeatOverlay: NSObject, MKOverlay {
         // その時刻のいちばん混んでいる所を基準にして、比で描く。
         // いつ見ても「どこが相対的に混んでいるか」は出る。
         let peak = Double(max(values.max() ?? 1, 1))
+        // 比だけで描くと、深夜にいちばん「マシに混んでいる」所が全力の赤紫になる。
+        // 実際そこも空いているので、層全体の濃さを絶対値でも抑える。
+        // 見えなくはならないが、混んでいない時間は薄い層として出る。
+        damping = min(1, peak / 70)
         blobs = zip(landmarks, values).map {
             (CLLocationCoordinate2D(latitude: $0.0.lat, longitude: $0.0.lon),
              $0.1, $0.0.pop, Double($0.1) / peak)
@@ -32,18 +38,19 @@ final class HeatOverlay: NSObject, MKOverlay {
 final class HeatRenderer: MKOverlayRenderer {
     override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in ctx: CGContext) {
         guard let heat = overlay as? HeatOverlay else { return }
-        // 下の2割は描かない。全部にじませると地図が色に沈んで、濃い所が読めなくなる。
+        // 下のほうは描かない。全部にじませると地図が色に沈んで、濃い所が読めなくなる。
         ctx.setBlendMode(.multiply)
-        for b in heat.blobs where b.share > 0.45 {
+        for b in heat.blobs where b.share > 0.30 {
             let p = point(for: MKMapPoint(b.coordinate))
             // 集客力が大きいほど広くにじむ。混んでいるほど濃い。
             // 集客力が大きいほど広くにじむ。地図の縮尺に合わせて実距離で持つ。
             let radius = CGFloat((420 + 900 * b.pop) * MKMapPointsPerMeterAtLatitude(35.718))
-            // 色はその地点の絶対値で決める（空き=緑・ふつう=琥珀・混雑=朱）。
-            // 濃さはその時刻の最大との比で決める。だから深夜でも濃淡は出る。
-            let c = Theme.crowdColour(b.crowd)
-            let t = (b.share - 0.45) / 0.55                       // 0〜1
-            let alpha = 0.10 + 0.42 * CGFloat(min(1, max(0, t)))
+            // その時刻の最大との比で、色も濃さも決める。
+            // 最も混んでいるところが赤紫、空くほど黄色へ抜けて、同時に薄くなる。
+            let t = CGFloat((b.share - 0.30) / 0.70)              // 0〜1
+            let x = min(1, max(0, t))
+            let c = Theme.heatColour(x)
+            let alpha = (0.05 + 0.45 * x * x) * CGFloat(heat.damping)   // 薄い側をより薄く
             let colours = [c.withAlphaComponent(alpha).cgColor,
                            c.withAlphaComponent(0).cgColor] as CFArray
             guard let g = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
