@@ -316,11 +316,11 @@ final class HintCard: UIView {
         button.alpha = used < 2 ? 1 : 0.45
         empty.isHidden = used > 0
         guard let d = store.destination else { return }
-        if used >= 1 { body.addArrangedSubview(line("What it is", d.category)) }
+        if used >= 1 { body.addArrangedSubview(line("What it is", store.category(d))) }
         if used >= 2 {
             let v = store.crowd.level(d, at: store.clock())
             body.addArrangedSubview(line("How busy", "\(v)% of peak"))
-            body.addArrangedSubview(line("First letter", String(d.name.prefix(1)) + "…"))
+            body.addArrangedSubview(line("First letter", store.firstLetter(d)))
         }
     }
 

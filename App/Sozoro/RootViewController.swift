@@ -82,8 +82,12 @@ final class RootViewController: UIViewController {
     private func make(_ s: Screen) -> UIViewController {
         switch s {
         case .cover:
-            let c = CoverViewController()
+            let c = CoverViewController(store: store)
             c.onStart = { [weak self] in self?.show(.map) }
+            c.onLang = { [weak self] l in
+                self?.store.lang = l
+                self?.show(.cover, animated: false)     // 言語は全画面に効く
+            }
             return c
         case .map:
             let m = MapViewController(store: store, demo: demo)
@@ -119,7 +123,7 @@ final class RootViewController: UIViewController {
             a.onRewards = { [weak self] in self?.show(.rewards) }
             return a
         case .rewards:
-            let r = RewardsViewController()
+            let r = RewardsViewController(lang: store.lang)
             r.onBack = { [weak self] in self?.followStage() }
             return r
         }
@@ -159,6 +163,7 @@ final class RootViewController: UIViewController {
 }
 
 #Preview("1 Cover")   { RootViewController(store: .preview(), start: .cover) }
+#Preview("1 表紙")     { RootViewController(store: .preview(lang: .ja), start: .cover) }
 #Preview("2 Map")     { RootViewController(store: .preview(), start: .map) }
 #Preview("3 Picks")   { RootViewController(store: .preview(stage: .picking), start: .picks) }
 #Preview("4 Compass") { RootViewController(store: .preview(stage: .walking), start: .compass) }

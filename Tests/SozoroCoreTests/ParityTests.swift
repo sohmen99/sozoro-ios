@@ -147,3 +147,39 @@ struct SeededGenerator: RandomNumberGenerator {
         return z ^ (z >> 31)
     }
 }
+
+/// 三択が同じ顔にならないか。ウェブ版で3文しか無かった問題の再発防止。
+final class TeaserTests: XCTestCase {
+    func testVariety() {
+        let spots = SozoroData.shared.spots
+        var seen = Set<String>()
+        for s in spots { seen.insert(Copy.teaser(s, .en)) }
+        XCTAssertGreaterThanOrEqual(seen.count, 30, "一行の種類が少なすぎる: \(seen.count)")
+    }
+
+    func testStableForSameSpot() {
+        guard let s = SozoroData.shared.spots.first else { return XCTFail() }
+        XCTAssertEqual(Copy.teaser(s, .en), Copy.teaser(s, .en), "同じ場所で文が変わる")
+    }
+
+    func testAvoidsRepeatsWithinADeal() {
+        let d = Draw()
+        var rng = SeededGenerator(seed: 11)
+        let ctx = Draw.Context(origin: .init(lat: 35.7138, lon: 139.7772), now: Date())
+        let pool = d.candidates(ctx)
+        for _ in 0..<200 {
+            let picks = d.pickMany(pool, ctx, using: &rng).picks
+            var used = Set<String>()
+            for p in picks { used.insert(Copy.teaser(p, .en, avoid: used)) }
+            XCTAssertEqual(used.count, picks.count, "同じ回に同じ文が並んだ")
+        }
+    }
+
+    func testCategoryIsEnglishInEnglish() {
+        for s in SozoroData.shared.spots {
+            let c = Copy.category(s.category, .en)
+            XCTAssertFalse(c.contains("飲食"), "英語なのに日本語のまま: \(c)")
+            XCTAssertFalse(c.contains("文化財のある"), "英語なのに日本語のまま: \(c)")
+        }
+    }
+}

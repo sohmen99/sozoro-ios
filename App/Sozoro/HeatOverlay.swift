@@ -27,14 +27,18 @@ final class HeatOverlay: NSObject, MKOverlay {
 final class HeatRenderer: MKOverlayRenderer {
     override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in ctx: CGContext) {
         guard let heat = overlay as? HeatOverlay else { return }
+        // 「どこが混んでいるか」を出す層なので、空いている地点は描かない。
+        // 全部にじませると地図全体が色に沈んで、赤が読めなくなる。
         ctx.setBlendMode(.multiply)
-        for b in heat.blobs {
+        for b in heat.blobs where b.crowd > 45 {
             let p = point(for: MKMapPoint(b.coordinate))
             // 集客力が大きいほど広くにじむ。混んでいるほど濃い。
             // 集客力が大きいほど広くにじむ。地図の縮尺に合わせて実距離で持つ。
             let radius = CGFloat((420 + 900 * b.pop) * MKMapPointsPerMeterAtLatitude(35.718))
+            // 46〜75 は琥珀、76以上は朱。混むほど濃く。
             let c = Theme.crowdColour(b.crowd)
-            let alpha = 0.10 + 0.30 * CGFloat(b.crowd) / 100
+            let over = CGFloat(b.crowd - 45) / 55                 // 0〜1
+            let alpha = 0.12 + 0.40 * min(1, max(0, over))
             let colours = [c.withAlphaComponent(alpha).cgColor,
                            c.withAlphaComponent(0).cgColor] as CFArray
             guard let g = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),

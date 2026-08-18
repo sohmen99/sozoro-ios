@@ -22,6 +22,8 @@ final class WalkStore {
     var hintsUsed = 0
     /// いま何時として扱うか。デモではここを差し替える。
     var clock: () -> Date = { Date() }
+    /// 表示の言語。英語が主。カバーで切り替える。
+    var lang: Lang = .en
 
     let draw = Draw()
     let route = Route()
@@ -120,21 +122,19 @@ final class WalkStore {
         course = nil; stops = []; note = nil; changed()
     }
 
-    func name(_ s: Spot) -> String { data.displayName(s, japanese: false) }
+    func name(_ s: Spot) -> String { data.displayName(s, japanese: lang == .ja) }
+    func category(_ s: Spot) -> String { Copy.category(s.category, lang) }
 
-    /// 正体を伏せた一行。同じ場所には毎回同じ文が当たるよう、名前から選ぶ。
-    func teaser(_ s: Spot) -> String {
-        let food = ["A small sign. The locals know it",
-                    "One street back from the crowd",
-                    "A light on in a narrow lane"]
-        let cult = ["A quiet precinct the guidebooks skip",
-                    "Something old, still standing here",
-                    "A gate, and no one behind it"]
-        let set = s.kind == .food ? food : cult
-        var h = 5381
-        for u in s.name.unicodeScalars { h = (h &* 33) &+ Int(u.value) }
-        return set[abs(h) % set.count]
+    /// 三択のあいだで文が重ならないようにする。
+    func teasers(for picks: [Spot]) -> [String] {
+        var used = Set<String>(), out: [String] = []
+        for p in picks {
+            let t = Copy.teaser(p, lang, avoid: used)
+            used.insert(t); out.append(t)
+        }
+        return out
     }
+    func teaser(_ s: Spot) -> String { Copy.teaser(s, lang) }
 
     func meta(_ s: Spot) -> String {
         guard let h = here else { return "" }
@@ -142,20 +142,27 @@ final class WalkStore {
         let m = draw.config.minutes(forStraight: d)
         let f = DateFormatter(); f.dateFormat = "H:mm"
         let back = f.string(from: Date().addingTimeInterval(Double(m * 2 + 10) * 60))
-        return "\(format(d)) · \(m) min walk · back by \(back)"
+        return lang == .ja ? "\(format(d))・徒歩\(m)分・\(back)には戻れます"
+                           : "\(format(d)) · \(m) min walk · back by \(back)"
     }
 
     func format(_ m: Double) -> String {
         m >= 2000 ? String(format: "%.1f km", m / 1000)
                   : "\(Int((m / 10).rounded()) * 10) m"
     }
+
+    /// 英語のときだけ、読みが分かっていれば頭文字を英語で返す。
+    func firstLetter(_ s: Spot) -> String {
+        Copy.firstLetter(s, lang, english: data.namesEN[s.name])
+    }
 }
 
 /// プレビューでも中身が入っているように、上野に立たせた状態を作る。
 @MainActor
 extension WalkStore {
-    static func preview(stage: Stage = .planning) -> WalkStore {
+    static func preview(stage: Stage = .planning, lang: Lang = .en) -> WalkStore {
         let s = WalkStore()
+        s.lang = lang
         s.here = Coordinate(lat: 35.7138, lon: 139.7772)
         s.origin = s.here
         switch stage {

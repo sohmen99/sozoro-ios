@@ -4,6 +4,11 @@ import SozoroCore
 /// 表紙。約束だけ示して、抽選の仕組みは明かさない。
 final class CoverViewController: UIViewController {
     var onStart: (() -> Void)?
+    var onLang: ((Lang) -> Void)?
+    private let store: WalkStore
+
+    init(store: WalkStore) { self.store = store; super.init(nibName: nil, bundle: nil) }
+    required init?(coder: NSCoder) { fatalError() }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -19,16 +24,27 @@ final class CoverViewController: UIViewController {
             wave.heightAnchor.constraint(equalToConstant: 340)
         ])
 
+        let ja = store.lang == .ja
         let mark = UILabel()
         mark.attributedText = NSAttributedString(string: "TOKYO SOZORO", attributes: [
             .font: Theme.mono(12, .semibold), .kern: 3.4, .foregroundColor: Theme.aiLight])
 
-        let head = makeLabel("You find out at the end", Theme.display(34), .white, lines: 0)
+        // 言語の切り替え。英語が主で、日本語はここで選ぶ。
+        let langSwitch = LangSwitch(current: store.lang)
+        langSwitch.onPick = { [weak self] l in self?.onLang?(l) }
+
+        let head = makeLabel(ja ? "終わりに わかる" : "You find out at the end",
+                             Theme.display(ja ? 30 : 34), .white, lines: 0)
         let body = makeLabel(
-            "A needle and a distance, nothing else. Where it was taking you is something you find out by getting there.",
+            ja ? "針と距離だけ。どこへ向かっていたのかは、着いてはじめてわかります。"
+               : "A needle and a distance, nothing else. Where it was taking you is something you find out by getting there.",
             Theme.body(14), Theme.mutedDark, lines: 0)
 
-        let facts = stack(.vertical, 12, [
+        let facts = stack(.vertical, 12, ja ? [
+            fact("方角と、残りの距離", "名前も写真も、地図の線も出しません。"),
+            fact("一度に15分ほど", "一か所でやめても、続けてもいい。"),
+            fact("人の少ない側へ", "人流の実測値をもとに、空いている側から抽選します。")
+        ] : [
             fact("A bearing and a distance", "No name, no photo, no map line."),
             fact("About 15 minutes at a time", "Stop after one, or keep going."),
             fact("Away from the crowd", "Drawn from the quiet side, using measured footfall.")
@@ -39,13 +55,14 @@ final class CoverViewController: UIViewController {
         c.baseForegroundColor = Theme.sumi
         c.cornerStyle = .large
         c.contentInsets = .init(top: 15, leading: 18, bottom: 15, trailing: 18)
-        c.attributedTitle = AttributedString("Begin", attributes:
+        c.attributedTitle = AttributedString(ja ? "はじめる" : "Begin", attributes:
             AttributeContainer([.font: Theme.body(16, .semibold)]))
         let start = UIButton(type: .system)
         start.configuration = c
         start.addAction(UIAction { [weak self] _ in self?.onStart?() }, for: .touchUpInside)
 
-        let col = stack(.vertical, 22, [mark, stack(.vertical, 12, [head, body]), facts, start])
+        let top = stack(.horizontal, 10, [mark, UIView(), langSwitch], align: .center)
+        let col = stack(.vertical, 22, [top, stack(.vertical, 12, [head, body]), facts, start])
         view.addSubview(col)
         col.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -71,7 +88,11 @@ final class CoverViewController: UIViewController {
 /// 集めた印。歩いた記録と一緒に見せる。
 final class RewardsViewController: UIViewController {
     private let log = WalkLog.shared
+    private let lang: Lang
     var onBack: (() -> Void)?
+
+    init(lang: Lang) { self.lang = lang; super.init(nibName: nil, bundle: nil) }
+    required init?(coder: NSCoder) { fatalError() }
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -86,9 +107,12 @@ final class RewardsViewController: UIViewController {
         back.tintColor = .white
         back.addAction(UIAction { [weak self] _ in self?.onBack?() }, for: .touchUpInside)
 
-        let head = makeLabel("Marks you have", Theme.display(26), .white)
-        let count = makeLabel("\(earned.count) of \(Reward.all.count) · \(stats.count) walks · "
-                              + String(format: "%.1f km", stats.totalM / 1000),
+        let head = makeLabel(lang == .ja ? "あつめた印" : "Marks you have", Theme.display(26), .white)
+        let count = makeLabel(lang == .ja
+                              ? "\(earned.count) / \(Reward.all.count) · \(stats.count)回 · "
+                                + String(format: "%.1fkm", stats.totalM / 1000)
+                              : "\(earned.count) of \(Reward.all.count) · \(stats.count) walks · "
+                                + String(format: "%.1f km", stats.totalM / 1000),
                               Theme.mono(12), Theme.mutedDark)
 
         let grid = UIStackView()
@@ -175,4 +199,34 @@ final class WaveView: UIView {
             ctx.strokePath()
         }
     }
+}
+
+/// 言語の切り替え。ウェブ版と同じで、カバーに置く。
+final class LangSwitch: UIView {
+    var onPick: ((Lang) -> Void)?
+    private var buttons: [UIButton] = []
+
+    init(current: Lang) {
+        super.init(frame: .zero)
+        layer.cornerRadius = 3
+        layer.borderWidth = 1
+        layer.borderColor = Theme.hairlineDk.cgColor
+        clipsToBounds = true
+        for l in [Lang.en, .ja] {
+            let b = UIButton(type: .system)
+            var c = UIButton.Configuration.plain()
+            c.attributedTitle = AttributedString(l == .en ? "EN" : "日本語", attributes:
+                AttributeContainer([.font: Theme.mono(11, .semibold)]))
+            c.contentInsets = .init(top: 6, leading: 10, bottom: 6, trailing: 10)
+            c.baseForegroundColor = l == current ? Theme.sumi : .white
+            c.background.backgroundColor = l == current ? .white : .clear
+            b.configuration = c
+            b.addAction(UIAction { [weak self] _ in self?.onPick?(l) }, for: .touchUpInside)
+            buttons.append(b)
+        }
+        let s = stack(.horizontal, 0, buttons)
+        addSubview(s)
+        s.pin(to: self)
+    }
+    required init?(coder: NSCoder) { fatalError() }
 }

@@ -16,8 +16,8 @@ final class PickCard: UIControl {
         layer.borderWidth = 1
         layer.borderColor = UIColor.white.withAlphaComponent(0.13).cgColor
 
-        thumb.backgroundColor = spot.kind == .food
-            ? UIColor(hex: 0x8C5A33) : UIColor(hex: 0x3D5266)
+        // 色は地点ごとに振る。同じ気分の3枚が同じ顔にならないように。
+        thumb.backgroundColor = PickCard.tint(for: spot)
         thumb.layer.cornerRadius = 10
         thumb.layer.cornerCurve = .continuous
         thumb.clipsToBounds = true
@@ -51,6 +51,17 @@ final class PickCard: UIControl {
     }
     required init?(coder: NSCoder) { fatalError() }
 
+    /// 名前から色相を振る。食は暖色、それ以外は寒色の帯の中で散らす。
+    static func tint(for spot: Spot) -> UIColor {
+        var h = 5381
+        for u in spot.name.unicodeScalars { h = (h &* 33) &+ Int(u.value) }
+        let t = CGFloat(abs(h) % 1000) / 1000
+        let hue: CGFloat = spot.kind == .food ? (0.02 + 0.11 * t) : (0.52 + 0.18 * t)
+        let sat: CGFloat = spot.kind == .food ? 0.42 + 0.16 * t : 0.26 + 0.16 * t
+        let bri: CGFloat = 0.34 + 0.20 * CGFloat(abs(h / 7) % 100) / 100
+        return UIColor(hue: hue, saturation: sat, brightness: bri, alpha: 1)
+    }
+
     override var isHighlighted: Bool {
         didSet { alpha = isHighlighted ? 0.72 : 1 }
     }
@@ -71,8 +82,9 @@ final class PickViewController: UIViewController {
 
         let eyebrow = UILabel(); eyebrow.attributedText = Theme.label("Three ways from here")
         let title = makeLabel("Pick one. We still will not say.", Theme.display(20), .white, lines: 0)
-        let cards = stack(.vertical, 10, store.picks.map { s in
-            let c = PickCard(spot: s, teaserText: store.teaser(s), metaText: store.meta(s))
+        let texts = store.teasers(for: store.picks)
+        let cards = stack(.vertical, 10, store.picks.enumerated().map { i, s in
+            let c = PickCard(spot: s, teaserText: texts[i], metaText: store.meta(s))
             c.addAction(UIAction { [weak self] _ in self?.onChoose?(s) }, for: .touchUpInside)
             return c
         })
@@ -131,7 +143,7 @@ final class ArrivalViewController: UIViewController {
 
         let name = makeLabel(store.destination.map(store.name) ?? "—",
                              Theme.display(21), .white, lines: 0)
-        let cat = makeLabel(store.destination?.category ?? "", Theme.body(12), Theme.mutedDark)
+        let cat = makeLabel(store.destination.map(store.category) ?? "", Theme.body(12), Theme.mutedDark)
         let count = makeLabel("\(store.stops.count) \(store.stops.count == 1 ? "stop" : "stops") so far",
                               Theme.mono(11.5), Theme.muted)
 
