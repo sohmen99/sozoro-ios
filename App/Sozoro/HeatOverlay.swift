@@ -5,30 +5,29 @@ import SozoroCore
 /// 混雑のにじみ。ウェブ版の <g id="heat"> と同じで、
 /// 基準地点に色の丸をぼかして重ね、掛け算で合成する。
 /// 点だけだと「どのあたりが混んでいるか」が読めないので、面で出す。
+/// 混雑のにじみ。ウェブ版の refreshHeat をそのまま移したもの。
+///
+///   r  = 22 + crowd * 0.36            （16m/px の画面での px）
+///   色 = 空き=緑 / ふつう=琥珀 / 混雑=朱
+///   濃さ = 0.10 + crowd/100 * 0.34
+///
+/// 比で正規化したり時刻で減衰させたりはしない。絶対値をそのまま出す。
+/// 深夜に薄くなるのは「実際に空いている」からで、それが正しい。
 final class HeatOverlay: NSObject, MKOverlay {
-    let blobs: [(coordinate: CLLocationCoordinate2D, crowd: Int, pop: Double, share: Double)]
+    let blobs: [(coordinate: CLLocationCoordinate2D, crowd: Int)]
     let coordinate: CLLocationCoordinate2D
     let boundingMapRect: MKMapRect
-    /// その時刻がそもそも混んでいるか。深夜は層ごと薄くする。
-    private(set) var damping: Double = 1
+    /// ウェブ版の図は 16m/px。半径の px をメートルに戻すための係数。
+    static let metresPerPixel = 16.0
 
     init(landmarks: [Landmark], crowd: Crowd, now: Date) {
-        let values = landmarks.map { crowd.level($0.asSpot, at: now) }
-        // 絶対値で切ると、深夜は全地点が45を割って層ごと消える（0〜6時と23時）。
-        // その時刻のいちばん混んでいる所を基準にして、比で描く。
-        // いつ見ても「どこが相対的に混んでいるか」は出る。
-        let peak = Double(max(values.max() ?? 1, 1))
-        // 比だけで描くと、深夜にいちばん「マシに混んでいる」所が全力の赤紫になる。
-        // 実際そこも空いているので、層全体の濃さを絶対値でも抑える。
-        // 見えなくはならないが、混んでいない時間は薄い層として出る。
-        damping = min(1, peak / 70)
-        blobs = zip(landmarks, values).map {
-            (CLLocationCoordinate2D(latitude: $0.0.lat, longitude: $0.0.lon),
-             $0.1, $0.0.pop, Double($0.1) / peak)
+        blobs = landmarks.map {
+            (CLLocationCoordinate2D(latitude: $0.lat, longitude: $0.lon),
+             crowd.level($0.asSpot, at: now))
         }
         coordinate = CLLocationCoordinate2D(latitude: 35.7180, longitude: 139.7880)
         let c = MKMapPoint(coordinate)
-        let span = 9000.0 * MKMapPointsPerMeterAtLatitude(35.718)
+        let span = 12000.0 * MKMapPointsPerMeterAtLatitude(35.718)
         boundingMapRect = MKMapRect(x: c.x - span / 2, y: c.y - span / 2,
                                     width: span, height: span)
         super.init()
@@ -38,19 +37,16 @@ final class HeatOverlay: NSObject, MKOverlay {
 final class HeatRenderer: MKOverlayRenderer {
     override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in ctx: CGContext) {
         guard let heat = overlay as? HeatOverlay else { return }
-        // 下のほうは描かない。全部にじませると地図が色に沈んで、濃い所が読めなくなる。
+        // ウェブ版は mix-blend-mode: multiply と feGaussianBlur。
+        // ここでは掛け算合成と、中心から外へ抜ける階調で同じ見え方にする。
         ctx.setBlendMode(.multiply)
-        for b in heat.blobs where b.share > 0.30 {
+        for b in heat.blobs {
             let p = point(for: MKMapPoint(b.coordinate))
-            // 集客力が大きいほど広くにじむ。混んでいるほど濃い。
-            // 集客力が大きいほど広くにじむ。地図の縮尺に合わせて実距離で持つ。
-            let radius = CGFloat((420 + 900 * b.pop) * MKMapPointsPerMeterAtLatitude(35.718))
-            // その時刻の最大との比で、色も濃さも決める。
-            // 最も混んでいるところが赤紫、空くほど黄色へ抜けて、同時に薄くなる。
-            let t = CGFloat((b.share - 0.30) / 0.70)              // 0〜1
-            let x = min(1, max(0, t))
-            let c = Theme.heatColour(x)
-            let alpha = (0.05 + 0.45 * x * x) * CGFloat(heat.damping)   // 薄い側をより薄く
+            let px = 22 + Double(b.crowd) * 0.36
+            let radius = CGFloat(px * HeatOverlay.metresPerPixel
+                                 * MKMapPointsPerMeterAtLatitude(35.718))
+            let alpha = CGFloat(0.10 + Double(b.crowd) / 100 * 0.34)
+            let c = Theme.crowdColour(b.crowd)
             let colours = [c.withAlphaComponent(alpha).cgColor,
                            c.withAlphaComponent(0).cgColor] as CFArray
             guard let g = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
