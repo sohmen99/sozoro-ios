@@ -1,5 +1,9 @@
 import UIKit
 import SozoroCore
+// #Preview が生成する中継コードが SwiftUI を import するので、
+// UIKit しか使っていなくてもここで依存に入れておく必要がある。
+// 無いと「no such module 'SwiftUI'」でプレビューだけが失敗する。
+import SwiftUI
 
 /// 画面をひとつだけ持って、差し替える。遷移はここに集約する。
 /// 表紙 → 地図 → 三択 → コンパス → 到着 → 印 の行き来。

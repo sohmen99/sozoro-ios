@@ -54,6 +54,11 @@ swift test          # ウェブ版が出した正解値と突き合わせる
 `WalkStore.preview(stage:)` が上野に立った状態を作るので、**位置情報も実機も要りません。**
 プレビューでは `LocationService` を起こさないので、許可も出ません。
 
+`RootViewController.swift` の頭に `import SwiftUI` が入っています。**消さないでください。**
+`#Preview` が生成する中継コードが `SwiftUI.__designTimeFloat` などを import するので、
+UIKit しか使っていなくても SwiftUI を依存に入れておかないと、
+プレビューだけが `no such module 'SwiftUI'` で落ちます。ビルドは通るので気づきにくい。
+
 ### デモモード
 
 地図の右上の杖のボタンで入ります。ウェブ版の `?demo=1` と同じで、
