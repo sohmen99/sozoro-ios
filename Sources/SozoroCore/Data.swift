@@ -8,6 +8,8 @@ public struct SozoroData: Sendable {
     public let mesh: [MeshCell]
     public let namesEN: [String: String]
     public let stationNamesEN: [String: String]
+    /// 行き先の名前 → 実写真。170件中58件にある。
+    public let photos: [String: Photo]
 
     public static let shared: SozoroData = load()
 
@@ -29,6 +31,7 @@ public struct SozoroData: Sendable {
         let st: [RawSpot] = decode("stations", as: [RawSpot].self)
         let m: [MeshCell] = decode("mesh", as: [MeshCell].self)
         let n: RawNames = decode("names", as: RawNames.self)
+        let ph: [String: Photo] = decode("photos", as: [String: Photo].self)
         return SozoroData(
             spots: s.enumerated().map { i, r in
                 Spot(id: "s/\(i)", name: r.name, coordinate: .init(lat: r.lat, lon: r.lon),
@@ -43,7 +46,7 @@ public struct SozoroData: Sendable {
                 Spot(id: "st/\(r.name)", name: r.name, coordinate: .init(lat: r.lat, lon: r.lon),
                      kind: .culture, category: "駅", isStation: true)
             },
-            mesh: m, namesEN: n.spots, stationNamesEN: n.stations)
+            mesh: m, namesEN: n.spots, stationNamesEN: n.stations, photos: ph)
     }
 
     /// 英語で見ている人に、読める名前を返す。分かっている分だけ添える。

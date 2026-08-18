@@ -61,6 +61,18 @@ final class RootViewController: UIViewController {
             // 立ち位置も時計も入らず「Looking for you…」のまま止まる。
             if store.here == nil { store.here = Coordinate(lat: 35.7148, lon: 139.7967) }
             store.clock = { [weak self] in self?.demo.now ?? Date() }
+            // 三択や到着から直接開いたときは、中身が無いと空の画面になる。
+            // デモのときだけ、その場で引いておく。
+            // dealThree の中で followStage が走って screen を書き換えるので、
+            // どこへ行きたかったかは先に控えておく。
+            let want = screen
+            if want == .picks || want == .arrival || want == .compass, let h = store.here {
+                store.dealThree(from: h)
+                if want != .picks, let first = store.picks.first {
+                    store.choose(first)
+                    if want == .arrival { store.arrive() }
+                }
+            }
         } else {
             location.onUpdate = { [weak self] c, h in
                 guard let self else { return }

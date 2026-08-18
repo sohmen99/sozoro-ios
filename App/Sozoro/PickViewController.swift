@@ -7,8 +7,10 @@ final class PickCard: UIControl {
     private let thumb = UIView()
     private let teaser = makeLabel("", Theme.body(14.5, .semibold), .white, lines: 0)
     private let meta = makeLabel("", Theme.mono(11.5), Theme.mutedDark, lines: 0)
+    /// ウェブ版の .pick-thumb と同じ 84px 角。
+    static let thumbSide: CGFloat = 84
 
-    init(spot: Spot, teaserText: String, metaText: String) {
+    init(spot: Spot, teaserText: String, metaText: String, photo: URL?) {
         super.init(frame: .zero)
         backgroundColor = UIColor.white.withAlphaComponent(0.045)
         layer.cornerRadius = 14
@@ -22,24 +24,30 @@ final class PickCard: UIControl {
         thumb.layer.cornerCurve = .continuous
         thumb.clipsToBounds = true
         thumb.translatesAutoresizingMaskIntoConstraints = false
-        thumb.widthAnchor.constraint(equalToConstant: 74).isActive = true
-        thumb.heightAnchor.constraint(equalToConstant: 74).isActive = true
+        thumb.widthAnchor.constraint(equalToConstant: Self.thumbSide).isActive = true
+        thumb.heightAnchor.constraint(equalToConstant: Self.thumbSide).isActive = true
 
-        // 色の階調をぼかして敷く。写真が来たら、ここを差し替えるだけ。
-        let g = CAGradientLayer()
-        g.colors = [UIColor.white.withAlphaComponent(0.28).cgColor,
-                    UIColor.black.withAlphaComponent(0.30).cgColor]
-        g.startPoint = CGPoint(x: 0.2, y: 0); g.endPoint = CGPoint(x: 0.9, y: 1)
-        g.frame = CGRect(x: 0, y: 0, width: 74, height: 74)
-        thumb.layer.addSublayer(g)
-
-        let icon = UIImageView(image: UIImage(systemName:
-            spot.kind == .food ? "fork.knife" : (spot.kind == .green ? "leaf" : "building.columns")))
-        icon.tintColor = UIColor.white.withAlphaComponent(0.5)
-        icon.translatesAutoresizingMaskIntoConstraints = false
-        thumb.addSubview(icon)
-        icon.centerXAnchor.constraint(equalTo: thumb.centerXAnchor).isActive = true
-        icon.centerYAnchor.constraint(equalTo: thumb.centerYAnchor).isActive = true
+        if let url = photo, let img = PickCard.blurred(url) {
+            // 実写真。ウェブ版と同じ blur(11px) saturate(1.25) scale(1.35)。
+            // ぼかしたあとに残るのは色と明暗だけなので、正体は伝わらない。
+            let v = UIImageView(image: img)
+            v.contentMode = .scaleAspectFill
+            v.clipsToBounds = true
+            thumb.addSubview(v)
+            v.pin(to: thumb)
+        } else {
+            // 写真が無い枚。色の階調だけ敷く。線のアイコンは置かない。
+            // ぼかした写真と線画を並べると、線画のほうが「はずれ」に見えるので。
+            let g = CAGradientLayer()
+            g.colors = [UIColor.white.withAlphaComponent(0.30).cgColor,
+                        PickCard.tint(for: spot).withAlphaComponent(0.0).cgColor,
+                        UIColor.black.withAlphaComponent(0.34).cgColor]
+            g.locations = [0, 0.55, 1]
+            g.startPoint = CGPoint(x: 0.15, y: 0)
+            g.endPoint = CGPoint(x: 0.9, y: 1)
+            g.frame = CGRect(x: 0, y: 0, width: Self.thumbSide, height: Self.thumbSide)
+            thumb.layer.addSublayer(g)
+        }
 
         teaser.text = teaserText
         meta.text = metaText
@@ -50,6 +58,36 @@ final class PickCard: UIControl {
         row.pin(to: self, insets: .init(top: 11, left: 11, bottom: 11, right: 11))
     }
     required init?(coder: NSCoder) { fatalError() }
+
+    /// ぼかした一枚を作る。読むたびに作り直すと重いので覚えておく。
+    /// 1.35倍に広げてから切るのは、ぼかしで端が薄くなるのを外へ追い出すため。
+    private static var cache: [URL: UIImage] = [:]
+    static func blurred(_ url: URL) -> UIImage? {
+        if let hit = cache[url] { return hit }
+        guard let data = try? Data(contentsOf: url), let src = UIImage(data: data),
+              let cg = src.cgImage else { return nil }
+        let side = thumbSide * 3                       // @3x ぶん
+        let over = side * 1.35
+        let ci = CIImage(cgImage: cg)
+        let fill = max(over / ci.extent.width, over / ci.extent.height)
+        guard let scaled = CIFilter(name: "CILanczosScaleTransform",
+                                    parameters: [kCIInputImageKey: ci,
+                                                 kCIInputScaleKey: fill])?.outputImage,
+              let sat = CIFilter(name: "CIColorControls",
+                                 parameters: [kCIInputImageKey: scaled,
+                                              kCIInputSaturationKey: 1.25])?.outputImage,
+              let blur = CIFilter(name: "CIGaussianBlur",
+                                  parameters: [kCIInputImageKey: sat.clampedToExtent(),
+                                               kCIInputRadiusKey: 11 * 3])?.outputImage
+        else { return nil }
+        let e = scaled.extent
+        let crop = CGRect(x: e.midX - side / 2, y: e.midY - side / 2, width: side, height: side)
+        let ctx = CIContext()
+        guard let out = ctx.createCGImage(blur, from: crop) else { return nil }
+        let img = UIImage(cgImage: out, scale: 3, orientation: .up)
+        cache[url] = img
+        return img
+    }
 
     /// 名前から色相を振る。食は暖色、それ以外は寒色の帯の中で散らす。
     static func tint(for spot: Spot) -> UIColor {
@@ -92,7 +130,8 @@ final class PickViewController: UIViewController {
                               Theme.display(store.lang == .ja ? 19 : 20), .white, lines: 0)
         let texts = store.teasers(for: store.picks)
         let cards = stack(.vertical, 10, store.picks.enumerated().map { i, s in
-            let c = PickCard(spot: s, teaserText: texts[i], metaText: store.meta(s))
+            let c = PickCard(spot: s, teaserText: texts[i], metaText: store.meta(s),
+                             photo: store.data.photoURL(for: s))
             c.addAction(UIAction { [weak self] _ in self?.onChoose?(s) }, for: .touchUpInside)
             return c
         })
@@ -156,8 +195,21 @@ final class ArrivalViewController: UIViewController {
         let head = makeLabel(ja ? "これでした。" : "This is what it was.",
                              Theme.display(ja ? 24 : 26), .white, lines: 0)
 
-        // 絵。写真の無い地点のほうが多いので、ここは描く。
-        let scene = ArrivalScene(kind: store.destination?.kind ?? .culture)
+        // ここで初めて伏せを解く。写真があれば写真、無ければ描いた絵。
+        // 焼き込んであるので、回線が無くても出る。
+        let photo = store.destination.flatMap { store.data.photo(for: $0) }
+        let photoURL = store.destination.flatMap { store.data.photoURL(for: $0) }
+        let scene: UIView
+        if let u = photoURL, let d = try? Data(contentsOf: u), let img = UIImage(data: d) {
+            let v = UIImageView(image: img)
+            v.contentMode = .scaleAspectFill
+            v.clipsToBounds = true
+            v.layer.cornerRadius = 8
+            v.layer.cornerCurve = .continuous
+            scene = v
+        } else {
+            scene = ArrivalScene(kind: store.destination?.kind ?? .culture)
+        }
         scene.translatesAutoresizingMaskIntoConstraints = false
         scene.heightAnchor.constraint(equalToConstant: 140).isActive = true
 
@@ -165,7 +217,12 @@ final class ArrivalViewController: UIViewController {
                              Theme.display(21), .white, lines: 0)
         let cat = makeLabel(store.destination.map(store.category) ?? "",
                             Theme.mono(10.5), Theme.mutedDark)
-        let card = stack(.vertical, 10, [scene, stack(.vertical, 4, [name, cat])])
+        // 撮った人とライセンス。要らないライセンスでも名前は出す。
+        var body: [UIView] = [scene, stack(.vertical, 4, [name, cat])]
+        if let p = photo {
+            body.append(makeLabel(p.credit, Theme.body(9.5), Theme.ink2, lines: 0))
+        }
+        let card = stack(.vertical, 10, body)
         card.isLayoutMarginsRelativeArrangement = true
         card.layoutMargins = .init(top: 12, left: 12, bottom: 14, right: 12)
         card.backgroundColor = Theme.sumi2

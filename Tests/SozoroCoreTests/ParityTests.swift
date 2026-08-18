@@ -99,6 +99,23 @@ final class ParityTests: XCTestCase {
         }
     }
 
+    /// 焼き込んだ写真。索けること、束の中に実体があること、撮影者が空でないこと。
+    func testPhotosAreBundled() {
+        let d = SozoroData.shared
+        XCTAssertEqual(d.photos.count, 58, "写真の件数")
+        var missing: [String] = []
+        for s in d.spots where d.photo(for: s) != nil {
+            if d.photoURL(for: s) == nil { missing.append(s.name) }
+            XCTAssertFalse(d.photo(for: s)!.artist.isEmpty, "撮影者が空: \(s.name)")
+            XCTAssertFalse(d.photo(for: s)!.licence.isEmpty, "ライセンスが空: \(s.name)")
+        }
+        XCTAssertTrue(missing.isEmpty, "束に実体が無い: \(missing)")
+        // 落としたものが戻っていないか。同名の別の寺と、照合ちがいの2件。
+        for bad in ["本行寺", "筆や", "長久院"] {
+            XCTAssertNil(d.photos[bad], "外したはずの写真が戻っている: \(bad)")
+        }
+    }
+
     func testRouteOptions() {
         let r = Route()
         for g in Self.golden.routes {
