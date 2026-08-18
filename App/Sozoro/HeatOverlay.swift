@@ -144,7 +144,7 @@ final class MeView: MKAnnotationView {
         let c = demo ? Theme.mid : Theme.ai
         ring.backgroundColor = c.withAlphaComponent(0.16)
         dot.backgroundColor = c
-        badge.text = demo ? "DEMO" : ""
+        badge.text = demo ? "SIM" : ""
         badge.textColor = c
         badge.isHidden = !demo
     }

@@ -16,6 +16,9 @@ final class MapViewController: UIViewController {
     private let map = MKMapView()
     private lazy var sheet = SheetView(store: store)
     private lazy var panel = DemoPanel(demo: demo, store: store)
+    /// シミュレーションに入った直後だけ、盤を開いた状態で見せる。
+    /// 畳んだ一行だけを置いても、そこが操作盤だと分からない。
+    var openPanelOnAppear = false
 
     init(store: WalkStore, demo: DemoMode) {
         self.store = store; self.demo = demo
@@ -104,6 +107,14 @@ final class MapViewController: UIViewController {
         layoutOffArea()
         refreshOffArea()
         sheet.foot.update(from: map)
+
+        if demo.on, openPanelOnAppear {
+            openPanelOnAppear = false
+            panel.setExpanded(true, animated: false)
+            // どこが操作盤かを一度だけ言う。次からは畳んだ一行だけ。
+            store.toast("Simulation mode. Tap the red bar to open or close the controls.",
+                        "シミュレーションモード。赤い帯を叩くと操作盤が開きます。")
+        }
     }
 
     private var detail: LandmarkDetailView?

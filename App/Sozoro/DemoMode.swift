@@ -75,12 +75,16 @@ final class DemoPanel: UIView {
     private(set) var expanded = false
     private let body = UIStackView()
     private let summary = makeLabel("", Theme.mono(11), Theme.mid)
+    /// 開いたときだけ出す説明。畳んだ一行には入れない。
+    private let lede = makeLabel("", Theme.body(10.5), Theme.mutedDark, lines: 0)
     private let chevron = UIImageView(image: UIImage(systemName: "chevron.down"))
 
     private func build() {
+        // 畳んだときは一行に収める。長い見出しを入れると時刻の表示が折れて潰れる。
+        // 説明のほうは開いた中に置く。
         let head = UILabel()
-        head.attributedText = Theme.label(store.t("Simulation — place and time are yours",
-                                                   "シミュレーション — 場所も時刻も自由"))
+        head.attributedText = Theme.label(store.t("Simulation", "シミュレーション"))
+        head.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         slider.minimumValue = 0; slider.maximumValue = 23.5; slider.value = 14
         slider.minimumTrackTintColor = Theme.mid
@@ -120,15 +124,19 @@ final class DemoPanel: UIView {
             self.demo.walk(store: self.store) { self.onChange?() }
         }, for: .touchUpInside)
 
-        let hint = makeLabel(store.t("Tap the map to stand there.", "地図を叩くと、そこに立ちます。"),
-                             Theme.body(10.5), Theme.mutedDark)
+        lede.text = store.t("Place and time are yours. Tap the map to stand there.",
+                            "場所も時刻も自由に置けます。地図を叩くと、そこに立ちます。")
 
         body.axis = .vertical; body.spacing = 9
-        [slider, daySeg, speedSeg, walkButton, hint].forEach { body.addArrangedSubview($0) }
+        [lede, slider, daySeg, speedSeg, walkButton].forEach { body.addArrangedSubview($0) }
 
         chevron.tintColor = Theme.mid
         chevron.setContentHuggingPriority(.required, for: .horizontal)
-        let headRow = stack(.horizontal, 10, [head, UIView(), summary, chevron], align: .center)
+        // 時刻・曜日・倍率は折らない。折れると3行になって畳んだ意味がなくなる。
+        summary.numberOfLines = 1
+        summary.setContentCompressionResistancePriority(.required, for: .horizontal)
+        summary.setContentHuggingPriority(.required, for: .horizontal)
+        let headRow = stack(.horizontal, 8, [head, UIView(), summary, chevron], align: .center)
         headRow.isUserInteractionEnabled = true
         headRow.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(toggle)))
 

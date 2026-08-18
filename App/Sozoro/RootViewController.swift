@@ -148,6 +148,8 @@ final class RootViewController: UIViewController {
             return c
         case .map:
             let m = MapViewController(store: store, demo: demo)
+            m.openPanelOnAppear = justEnteredDemo
+            justEnteredDemo = false
             m.onBegin = { [weak self] in self?.store.begin() }
             m.onCover = { [weak self] in self?.show(.cover) }
             m.onRewards = { [weak self] in self?.show(.rewards) }
@@ -216,8 +218,12 @@ final class RootViewController: UIViewController {
     }
     private var freshSeals: [Reward] = []
 
+    /// シミュレーションに入った直後か。地図を作り直すときに一度だけ立てる。
+    private var justEnteredDemo = false
+
     private func setDemo(_ on: Bool) {
         demo.on = on
+        justEnteredDemo = on
         if on {
             location.stop()
             demo.stop()
