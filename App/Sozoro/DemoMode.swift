@@ -5,7 +5,8 @@ import SozoroCore
 /// ウェブ版の ?demo=1 と同じ役目。シミュレータでは実測が取れないので、こちらが本番になる。
 @MainActor
 final class DemoMode {
-    var on = false
+    /// 起動引数 `-demo 1` でも入れられる。シミュレータで写真を撮るときに使う。
+    var on = CommandLine.arguments.contains("-demo")
     /// 0〜23.5。混雑推定も営業時間もこの時刻に従う。
     var hour: Double = 14
     var weekend = true

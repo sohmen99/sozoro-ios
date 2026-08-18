@@ -47,10 +47,10 @@ final class MapViewController: UIViewController {
         // 遊べる範囲のちょい外までで止める。世界地図まで引けると、迷子になる。
         let play = MKCoordinateRegion(
             center: CLLocationCoordinate2D(latitude: 35.7180, longitude: 139.7880),
-            latitudinalMeters: 9000, longitudinalMeters: 9000)
+            latitudinalMeters: 16000, longitudinalMeters: 16000)
         map.setCameraBoundary(MKMapView.CameraBoundary(coordinateRegion: play), animated: false)
         map.setCameraZoomRange(MKMapView.CameraZoomRange(minCenterCoordinateDistance: 900,
-                                                        maxCenterCoordinateDistance: 14000),
+                                                        maxCenterCoordinateDistance: 22000),
                                animated: false)
         if demo.on {
             // デモでは地図を叩いた場所に立つ。実測は起こさない。
@@ -116,6 +116,38 @@ final class MapViewController: UIViewController {
         map.addAnnotation(a)
         meMarker = a
     }
+    private var framed = false
+    /// シートが画面の下半分を覆うので、素直に中心を置くと上野も浅草も
+    /// 板の下に隠れて、ヒートが見えているのに見えない状態になる。
+    /// 立っている場所と混雑の中心が、シートの上の帯に収まるように寄せる。
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        // シートの高さが決まる前に呼ばれると枠がずれる。決まってから一度だけ。
+        guard !framed, view.bounds.height > 0, sheet.bounds.height > 0 else { return }
+        framed = true
+        // 縮尺はウェブ版の図と同じ 16m/px にそろえる。ここを詰めないと、
+        // にじみの半径だけ実寸で正しくても、画面上は倍の大きさになって
+        // 全部が重なった一枚のもやに見える。
+        let pad = UIEdgeInsets(top: 96, left: 24, bottom: sheet.bounds.height + 16, right: 24)
+        let boxW = max(80, view.bounds.width - pad.left - pad.right)
+        let boxH = max(80, view.bounds.height - pad.top - pad.bottom)
+        let wideM = 16.0 * boxW                                   // 16m/px × 見えている幅
+        let here = store.here ?? Coordinate(lat: 35.7138, lon: 139.7772)
+        let hot = Coordinate(lat: 35.7138, lon: 139.7813)         // 上野と浅草のあいだ
+        let mid = Coordinate(lat: (here.lat + hot.lat) / 2, lon: (here.lon + hot.lon) / 2)
+        let ppm = MKMapPointsPerMeterAtLatitude(mid.lat)
+        let c = MKMapPoint(CLLocationCoordinate2D(latitude: mid.lat, longitude: mid.lon))
+        let w = wideM * ppm, h = w * boxH / boxW
+        map.setVisibleMapRect(MKMapRect(x: c.x - w / 2, y: c.y - h / 2, width: w, height: h),
+                              edgePadding: pad, animated: false)
+    }
+
+    /// 気分や歩き方が変わったとき。地図はそのままで、シートだけ描き直す。
+    func storeChanged() {
+        sheet.refresh()
+        refreshOffArea()
+    }
+
     /// 現在地だけ動かす。地図を作り直さない。
     private func moveMeMarker() {
         guard let h = store.here else { return }

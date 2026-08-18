@@ -28,7 +28,7 @@ final class MapFoot: UIView {
         let head = UILabel()
         head.attributedText = Theme.label(ja ? "いまの混雑" : "Crowd now")
 
-        let keys = stack(.horizontal, 10, [
+        let keys = stack(.horizontal, 9, [
             key(Theme.quiet, ja ? "空" : "Quiet"),
             key(Theme.mid,   ja ? "やや混" : "Busy"),
             key(Theme.busy,  ja ? "混雑" : "Packed")
@@ -56,8 +56,10 @@ final class MapFoot: UIView {
         ])
 
         let scale = stack(.vertical, 4, [scaleLabel, barRow], align: .trailing)
-        let row = stack(.horizontal, 16, [stack(.vertical, 6, [head, keys]), UIView(), scale],
+        let row = stack(.horizontal, 12, [stack(.vertical, 6, [head, keys]), UIView(), scale],
                         align: .bottom)
+        scale.setContentHuggingPriority(.required, for: .horizontal)
+        scale.setContentCompressionResistancePriority(.required, for: .horizontal)
         addSubview(row)
         row.pin(to: self, insets: .init(top: 2, left: 0, bottom: 10, right: 0))
     }
@@ -70,7 +72,10 @@ final class MapFoot: UIView {
         dot.translatesAutoresizingMaskIntoConstraints = false
         dot.widthAnchor.constraint(equalToConstant: 8).isActive = true
         dot.heightAnchor.constraint(equalToConstant: 8).isActive = true
-        return stack(.horizontal, 5, [dot, makeLabel(t, Theme.body(10.5), Theme.ink2)], align: .center)
+        let l = makeLabel(t, Theme.body(10.5), Theme.ink2)
+        l.numberOfLines = 1
+        l.setContentCompressionResistancePriority(.required, for: .horizontal)
+        return stack(.horizontal, 5, [dot, l], align: .center)
     }
     private func tick() -> UIView {
         let v = UIView()

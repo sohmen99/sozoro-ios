@@ -161,7 +161,7 @@ final class SheetView: UIView {
 
         let col = stack(.vertical, 12, [gripWrap, foot, peekRow, body])
         addSubview(col)
-        col.pin(to: self, insets: .init(top: 12, left: 20, bottom: 20, right: 20))
+        col.pin(to: self, insets: .init(top: 12, left: 20, bottom: 46, right: 20))
         syncPeek()
     }
 

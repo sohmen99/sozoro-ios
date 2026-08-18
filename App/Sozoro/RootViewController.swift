@@ -23,14 +23,35 @@ final class RootViewController: UIViewController {
         self.screen = start
         super.init(nibName: nil, bundle: nil)
     }
-    convenience init() { self.init(store: WalkStore()) }
+    /// 起動引数で最初の画面を選べる。`-screen map` のように渡す。
+    /// シミュレータで一画面だけ見たいときと、画面の写真を撮るときに使う。
+    convenience init() {
+        var start = Screen.cover
+        if let i = CommandLine.arguments.firstIndex(of: "-screen"),
+           i + 1 < CommandLine.arguments.count {
+            switch CommandLine.arguments[i + 1] {
+            case "map":     start = .map
+            case "picks":   start = .picks
+            case "compass": start = .compass
+            case "arrival": start = .arrival
+            case "rewards": start = .rewards
+            default:        start = .cover
+            }
+        }
+        self.init(store: WalkStore(), start: start)
+    }
     required init?(coder: NSCoder) { fatalError() }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = Theme.sumi
         store.onChange = { [weak self] in self?.followStage() }
-        if !demo.on {
+        if demo.on {
+            // 起動時からデモの場合。トグルで入ったときと同じ状態にしておかないと、
+            // 立ち位置も時計も入らず「Looking for you…」のまま止まる。
+            if store.here == nil { store.here = Coordinate(lat: 35.7148, lon: 139.7967) }
+            store.clock = { [weak self] in self?.demo.now ?? Date() }
+        } else {
             location.onUpdate = { [weak self] c, h in
                 guard let self else { return }
                 self.store.here = c; self.store.heading = h
@@ -53,7 +74,13 @@ final class RootViewController: UIViewController {
         case .walking:  want = .compass
         case .arrived:  want = .arrival
         }
-        guard want != screen else { return }
+        guard want != screen else {
+            // 画面はそのままでいい。ただし中身は描き直す。
+            // ここを黙って返していたので、気分や歩き方を押しても表示が変わらず、
+            // 「押せない」ように見えていた。
+            (current as? MapViewController)?.storeChanged()
+            return
+        }
         show(want)
     }
 
