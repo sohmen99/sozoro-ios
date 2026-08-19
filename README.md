@@ -38,7 +38,7 @@
 | `SozoroApp` | AppDelegate。窓に `RootViewController` を差すだけ |
 | `RootViewController` | **画面をひとつ持って差し替える。遷移はここに集約**。表紙→地図→三択→コンパス→到着→印 |
 | `CoverViewController` | 表紙。約束だけ示して、抽選の仕組みは明かさない |
-| `MapViewController` | 地図に混み具合を色で置く。上のバーから表紙・印・デモへ |
+| `MapViewController` | 地図に混み具合を色で置く。上のバーから表紙・ヘルプ・印・シミュレーションへ |
 | `SheetView` | 気分のチップ3つと歩き方の行。**凡例と縮尺は見出しに組み込んである**（地図の端に置くとカードが滑ったとき置いていかれる） |
 | `PickViewController` | 三択。ぼかした色と伏せた一行と距離だけ |
 | `CompassViewController` | CALayer の文字盤。針は片側、文字は回さず立てる |
@@ -173,6 +173,16 @@ python3 tools/photos.py ~/Downloads/sozoro_matched_185.xlsx
 
 引いた三択のうち写真がつく割合は、**11時40% / 14時40% / 19時55%**（各400回）。
 飲食84件には写真がほとんど無く、静けさ重みが昼に飲食を選びやすいのでこの差が出ます。
+
+## 公開しているページ
+
+| | |
+|---|---|
+| プライバシーと問い合わせ | https://sohmen99.github.io/tokyo-sozoro/privacy.html |
+
+App Store の **Privacy Policy URL と Support URL の両方**にこの1本を使います。
+アプリからは地図の上のバー、印の左の `?` で開きます。ページ自体は
+[tokyo-sozoro](https://github.com/sohmen99/tokyo-sozoro) の `privacy.html`。
 
 ## 出すときの identifier
 

@@ -79,6 +79,11 @@ final class MapViewController: UIViewController {
         let bar = stack(.horizontal, 8, [
             roundButton("chevron.left") { [weak self] in self?.onCover?() },
             UIView(),
+            // 困ったときの窓口。プライバシーと問い合わせ先を1枚にまとめたページ。
+            roundButton("questionmark") {
+                URL(string: "https://sohmen99.github.io/tokyo-sozoro/privacy.html")
+                    .map { UIApplication.shared.open($0) }
+            },
             roundButton("seal") { [weak self] in self?.onRewards?() },
             roundButton(demo.on ? "wand.and.stars.inverse" : "wand.and.stars") { [weak self] in
                 guard let self else { return }

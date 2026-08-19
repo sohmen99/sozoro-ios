@@ -36,6 +36,9 @@ final class GuideViewController: UIViewController {
         rows.append(section("ALONG THE TOP"))
         rows.append(row(symbol: "chevron.left", round: true, title: "Back to the cover",
                         body: "The opening screen. Nothing is lost."))
+        rows.append(row(symbol: "questionmark", round: true, title: "Help and privacy",
+                        body: "Opens a page with how to reach us, and what the app does with your position. "
+                            + "Short version: it stays on the phone."))
         rows.append(row(symbol: "seal", round: true, title: "Marks you have",
                         body: "Fifteen marks for walking, and the record of every walk."))
         rows.append(row(symbol: "wand.and.stars", round: true, title: "Simulation mode",
