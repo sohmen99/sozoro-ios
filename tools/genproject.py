@@ -23,6 +23,7 @@ sources    = sec(lambda n: f'\t\t\t\t{F[n][1]} /* {n} in Sources */,')
 
 SETTINGS = '''				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 3634A55J33;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Sozoro needs your position to work out where to send you, and how far you still have to walk.";
@@ -33,7 +34,7 @@ SETTINGS = '''				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				LD_RUNPATH_SEARCH_PATHS = ( "$(inherited)", "@executable_path/Frameworks" );
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = "dev.sozoro.app";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.sohmen99.sozoro";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

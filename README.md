@@ -174,6 +174,18 @@ python3 tools/photos.py ~/Downloads/sozoro_matched_185.xlsx
 引いた三択のうち写真がつく割合は、**11時40% / 14時40% / 19時55%**（各400回）。
 飲食84件には写真がほとんど無く、静けさ重みが昼に飲食を選びやすいのでこの差が出ます。
 
+## 出すときの identifier
+
+```
+PRODUCT_BUNDLE_IDENTIFIER = com.sohmen99.sozoro
+DEVELOPMENT_TEAM          = 3634A55J33
+```
+
+実機向けのビルドは通り、この identifier で署名されます。ただし署名に使われたのは
+チームのワイルドカード（`3634A55J33.*`）で、**専用の App ID はまだ作られていません**。
+App Store Connect で新規アプリを作るには explicit な App ID が要るので、
+Developer の Identifiers で一度だけ登録してください。
+
 ## ボタンは3階層
 
 画面ごとに手で書いていたら、押せるのに灰色のベタで出ているものが増えたので、

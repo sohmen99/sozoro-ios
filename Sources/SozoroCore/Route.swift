@@ -82,7 +82,10 @@ public struct Route: Sendable {
             .filter { opt in
                 var from = origin
                 for s in build(from: origin, to: opt).stops {
-                    if Double(config.minutes(forStraight: Geo.distance(from, s.coordinate))) > limit { return false }
+                    // 丸めずに比べる。丸めると 22.6分 が 23分 になって、
+                    // ウェブ版と外す・外さないが食い違う。
+                    let mins = Geo.distance(from, s.coordinate) * config.detour / config.walkSpeed
+                    if mins > limit { return false }
                     from = s.coordinate
                 }
                 return true
@@ -95,19 +98,34 @@ public struct Route: Sendable {
         let legs = max(1, min(3, Int(ceil(Double(opt.minutes) / (config.legMinutes + config.toleranceMinutes)))))
         var stops: [Spot] = []
         var used = Set<String>()
+        // 直前の地点から近すぎる寄り道は置かない。3分で着く区間は散歩にならない。
+        var prev = origin
         if legs > 1 {
             for i in 1..<legs {
                 let f = Double(i) / Double(legs)
                 let at = Coordinate(lat: origin.lat + (opt.station.coordinate.lat - origin.lat) * f,
                                     lon: origin.lon + (opt.station.coordinate.lon - origin.lon) * f)
+                // 500mで見つからない中間点がある（秋葉原・白山・春日の方向）。
+                // 黙って寄り道を落とすと、選ぶ画面で約束した区間数と食い違うので、
+                // 一段広げてから諦める。
                 var best: (Spot, Double)?
-                for c in data.culture where !used.contains(c.id) && Self.visitable(c.name) {
-                    let d = Geo.distance(at, c.coordinate)
-                    guard d <= 500 else { continue }
-                    if best == nil || d < best!.1 { best = (c, d) }
+                for limit in [500.0, 900.0] {
+                    for c in data.culture where !used.contains(c.id) && Self.visitable(c.name) {
+                        let d = Geo.distance(at, c.coordinate)
+                        guard d <= limit,
+                              Geo.distance(prev, c.coordinate) >= config.minMetres else { continue }
+                        if best == nil || d < best!.1 { best = (c, d) }
+                    }
+                    if best != nil { break }
                 }
-                if let b = best { used.insert(b.0.id); stops.append(b.0) }
+                if let b = best { used.insert(b.0.id); stops.append(b.0); prev = b.0.coordinate }
             }
+        }
+        // 最後の寄り道が駅のすぐ隣なら、寄り道のほうを落とす。
+        // 「250m歩いて到着」という区間を作らない。
+        if let last = stops.last,
+           Geo.distance(last.coordinate, opt.station.coordinate) < config.minMetres {
+            stops.removeLast()
         }
         stops.append(opt.station)
         return Course(stops: stops, station: opt.station, direction: opt.direction,

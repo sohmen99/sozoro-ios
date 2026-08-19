@@ -69,7 +69,9 @@ final class DirectionsViewController: UIViewController {
 
     /// 一方角ぶん。ウェブ版と同じで、方角・駅名・分・区間数だけ。
     private func row(for o: Route.Option) -> UIView {
-        let legs = max(1, min(3, Int((Double(o.minutes) / store.draw.config.legMinutes).rounded())))
+        // 区間数は式から出さず、実際に組んだコースから数える。
+        // 中間点に寄り道が見つからないと、約束した数と食い違う。
+        let legs = max(1, store.route.build(from: store.here ?? o.station.coordinate, to: o).stops.count)
         let ja = store.lang == .ja
         let name = store.data.displayName(o.station, japanese: ja)
         let b = UIButton(type: .system)
