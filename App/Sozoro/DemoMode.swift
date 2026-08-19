@@ -51,7 +51,9 @@ final class DemoMode {
 final class DemoPanel: UIView {
     private let demo: DemoMode
     private let store: WalkStore
-    private let hourLabel = makeLabel("14:00", Theme.mono(13, .semibold), .white)
+    /// つまみの左に出す時刻。動かしている最中に何時なのかが見えないと、
+    /// そもそも合わせられない。畳んだときの readout とは別に要る。
+    private let hourLabel = makeLabel("14:00", Theme.mono(15, .semibold), .white)
     private let slider = UISlider()
     private let daySeg: UISegmentedControl
     private let speedSeg = UISegmentedControl(items: ["×1", "×10", "×60"])
@@ -62,7 +64,7 @@ final class DemoPanel: UIView {
         self.demo = demo; self.store = store
         daySeg = UISegmentedControl(items: [store.t("Weekday", "平日"), store.t("Weekend", "休日")])
         super.init(frame: .zero)
-        backgroundColor = Theme.sumi.withAlphaComponent(0.92)
+        backgroundColor = Theme.sumi
         layer.cornerRadius = 14
         layer.cornerCurve = .continuous
         layer.borderWidth = 1
@@ -94,16 +96,23 @@ final class DemoPanel: UIView {
             self.sync(); self.onChange?()
         }, for: .valueChanged)
 
+        // 選んでいない側の地も塗る。塗らないと地図が透けて読めない。
+        daySeg.backgroundColor = Theme.sumi3
         daySeg.selectedSegmentIndex = 1
         daySeg.selectedSegmentTintColor = Theme.mid
+        daySeg.setTitleTextAttributes([.foregroundColor: UIColor.white], for: .normal)
+        daySeg.setTitleTextAttributes([.foregroundColor: UIColor.white], for: .selected)
         daySeg.addAction(UIAction { [weak self] _ in
             guard let self else { return }
             self.demo.weekend = self.daySeg.selectedSegmentIndex == 1
             self.sync(); self.onChange?()
         }, for: .valueChanged)
 
+        speedSeg.backgroundColor = Theme.sumi3
         speedSeg.selectedSegmentIndex = 2
         speedSeg.selectedSegmentTintColor = Theme.mid
+        speedSeg.setTitleTextAttributes([.foregroundColor: UIColor.white], for: .normal)
+        speedSeg.setTitleTextAttributes([.foregroundColor: UIColor.white], for: .selected)
         speedSeg.addAction(UIAction { [weak self] _ in
             guard let self else { return }
             self.demo.speed = [1.0, 10, 60][self.speedSeg.selectedSegmentIndex]
@@ -127,8 +136,14 @@ final class DemoPanel: UIView {
         lede.text = store.t("Place and time are yours. Tap the map to stand there.",
                             "場所も時刻も自由に置けます。地図を叩くと、そこに立ちます。")
 
+        // 時刻はつまみと同じ行に置く。動かしながら見えないと合わせられない。
+        hourLabel.setContentHuggingPriority(.required, for: .horizontal)
+        hourLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        hourLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 52).isActive = true
+        let hourRow = stack(.horizontal, 10, [hourLabel, slider], align: .center)
+
         body.axis = .vertical; body.spacing = 9
-        [lede, slider, daySeg, speedSeg, walkButton].forEach { body.addArrangedSubview($0) }
+        [lede, hourRow, daySeg, speedSeg, walkButton].forEach { body.addArrangedSubview($0) }
 
         chevron.tintColor = Theme.mid
         chevron.setContentHuggingPriority(.required, for: .horizontal)

@@ -58,8 +58,10 @@ final class RootViewController: UIViewController {
             Toast.show(text, over: self.view)
         }
         if demo.on {
-            // 起動時からデモの場合。トグルで入ったときと同じ状態にしておかないと、
-            // 立ち位置も時計も入らず「Looking for you…」のまま止まる。
+            // 起動時からシミュレーションの場合。トグルで入ったときと同じ状態に
+            // しておかないと、立ち位置も時計も入らず「Looking for you…」で止まる。
+            // 盤も同じように開いて見せる。どちらの入り方でも初回は開く。
+            justEnteredDemo = true
             if store.here == nil { store.here = Coordinate(lat: 35.7148, lon: 139.7967) }
             store.clock = { [weak self] in self?.demo.now ?? Date() }
             // 三択や到着から直接開いたときは、中身が無いと空の画面になる。
