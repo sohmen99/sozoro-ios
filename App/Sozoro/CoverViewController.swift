@@ -33,11 +33,14 @@ final class CoverViewController: UIViewController {
         // 文言は WalkStore.t(en, ja) に両方入れたままなので、
         // LangSwitch を top に戻せばそのまま日本語に切り替わる。
 
-        let head = makeLabel(ja ? "終わりに わかる" : "You find out at the end",
-                             Theme.display(ja ? 30 : 34), .white, lines: 0)
+        // 「最後にわかる」は決まりごとの説明でしかなかった。針の先で何かが待っている、
+        // という誘いに替える。英語は長いので少し落とす。
+        let head = Theme.headline(ja ? "針の先に、待っている場所がある"
+                                     : "Something is waiting at the tip of the needle",
+                                  ja ? 27 : 26, .white)
         let body = makeLabel(
-            ja ? "針と距離だけ。どこへ向かっていたのかは、着いてはじめてわかります。"
-               : "A needle and a distance, nothing else. Where it was taking you is something you find out by getting there.",
+            ja ? "針と距離だけ。名前も、写真も、選ばれた理由も、あなたが着いたときに届きます。"
+               : "A needle and a distance, nothing else. The name, the photograph and the reason it was chosen all arrive when you do.",
             Theme.body(14), Theme.mutedDark, lines: 0)
 
         let facts = stack(.vertical, 12, ja ? [

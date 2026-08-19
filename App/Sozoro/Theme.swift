@@ -94,6 +94,23 @@ enum Theme {
         vc.present(a, animated: true)
     }
 
+    /// 明朝の見出しを2行以上で組むときの行送り。
+    /// HiraMinProN が返す lineHeight は欧文の字面より低いので、そのまま流すと
+    /// 2行目の下が切れる。行の高さを字の大きさから決め直す。
+    @MainActor
+    static func headline(_ text: String, _ size: CGFloat, _ colour: UIColor) -> UILabel {
+        // 下限だけ上げる。上限まで決めると、そこで頭打ちになって同じように切れる。
+        let p = NSMutableParagraphStyle()
+        p.minimumLineHeight = size * 1.42
+        let l = UILabel()
+        l.numberOfLines = 0
+        l.attributedText = NSAttributedString(string: text, attributes: [
+            .font: display(size), .foregroundColor: colour, .paragraphStyle: p
+        ])
+        l.setContentCompressionResistancePriority(.required, for: .vertical)
+        return l
+    }
+
     /// 小さい見出し。字間を空けて、うるさくしない。
     static func label(_ text: String) -> NSAttributedString {
         NSAttributedString(string: text.uppercased(), attributes: [
