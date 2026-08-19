@@ -35,22 +35,25 @@ final class CoverViewController: UIViewController {
 
         // 「最後にわかる」は決まりごとの説明でしかなかった。針の先で何かが待っている、
         // という誘いに替える。英語は長いので少し落とす。
-        let head = Theme.headline(ja ? "針の先に、待っている場所がある"
-                                     : "Something is waiting at the tip of the needle",
-                                  ja ? 27 : 26, .white)
+        // 売りは「伏せること」ではない。伏せるのは遊び方。
+        // 上野・浅草で、混雑を避けながら、見つかりにくい良い場所を探し当てる遊び。
+        let head = Theme.headline(ja ? "人のいない、いい場所を探し当てる"
+                                     : "Hunt down the places the crowds miss",
+                                  ja ? 27 : 28, .white)
         let body = makeLabel(
-            ja ? "針と距離だけ。名前も、写真も、あなたが着いたときに届きます。"
-               : "A needle and a distance, nothing else. The name and the photograph arrive when you do.",
+            ja ? "上野・浅草には、誰も前に立っていない良い場所があります。そぞろは一つ選んで針を向けるだけ。探し当てるのはあなたです。"
+               : "Ueno and Asakusa are full of good places nobody is standing in front of. Sozoro picks one and points a needle at it. The finding is yours.",
             Theme.body(14), Theme.mutedDark, lines: 0)
 
+        // 3行は「何が良いのか」の順に。仕掛けの説明から始めない。
         let facts = stack(.vertical, 12, ja ? [
-            fact("方角と、残りの距離", "名前も写真も、地図の線も出しません。"),
-            fact("一度に15分ほど", "一か所でやめても、続けてもいい。"),
-            fact("人の少ない側へ", "人流の実測値をもとに、空いている側から抽選します。")
+            fact("探すのは、いい場所", "156件は台東区・荒川区の文化財と食べもの。観光地図には出てきません。"),
+            fact("混雑には送り込まない", "人流の実測値で重みを付け、混んでいるエリアは丸ごと除外します。"),
+            fact("道具は、コンパスだけ", "方角と残りの距離。名前も写真も、着くまで出しません。")
         ] : [
-            fact("A bearing and a distance", "No name, no photo, no map line."),
-            fact("About 15 minutes at a time", "Stop after one, or keep going."),
-            fact("Away from the crowd", "Drawn from the quiet side, using measured footfall.")
+            fact("The prize is a good place", "156 of them, from Taito and Arakawa's own registers. Not on the tourist map."),
+            fact("It will not send you into a crowd", "Weighted on measured footfall; crowded areas are excluded outright."),
+            fact("Your only tool is a compass", "A bearing and a distance. No name, no photo, until you get there.")
         ])
 
         var c = UIButton.Configuration.filled()
