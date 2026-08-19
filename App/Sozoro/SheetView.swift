@@ -128,9 +128,8 @@ final class SheetView: UIView {
 
         let title = makeLabel(store.t("Where should we wander?", "どこへ ぶらつきますか"),
                               Theme.display(21), Theme.ink)
-        let sub = makeLabel(store.t(
-            "Tell us what you're after. We draw from the quiet side, and keep the spot to ourselves.",
-            "気分だけ教えてください。空いている側から引いて、行き先は伏せておきます。"),
+        let sub = makeLabel(store.t("Pick a mood, draw a place, follow the needle.",
+                                    "気分を選ぶ、一か所を引く、針の指す方へ。"),
                             Theme.body(12.5), Theme.muted, lines: 0)
 
         let lookLabel = UILabel()

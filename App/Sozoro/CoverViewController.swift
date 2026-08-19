@@ -41,10 +41,6 @@ final class CoverViewController: UIViewController {
         let head = Theme.headline(ja ? "まだ見つけていない場所を、探し当てる"
                                      : "Hunt down what you haven't found yet",
                                   ja ? 25 : 28, .white)
-        let body = makeLabel(
-            ja ? "上野・浅草には、混んだ通りから二本外れたところに、まだよく知られていない場所がいくつもあります。そぞろは一つ選んで針を向けるだけ。探し当てるのはあなたです。"
-               : "Ueno and Asakusa are full of little-known places, a few streets off the crowded ones. Sozoro picks one and points a needle at it. The finding is yours.",
-            Theme.body(14), Theme.mutedDark, lines: 0)
 
         // 3行は「何が良いのか」の順に。仕掛けの説明から始めない。
         let facts = stack(.vertical, 12, ja ? [
@@ -69,7 +65,7 @@ final class CoverViewController: UIViewController {
         start.addAction(UIAction { [weak self] _ in self?.onStart?() }, for: .touchUpInside)
 
         let top = stack(.horizontal, 10, [mark, UIView()], align: .center)
-        let col = stack(.vertical, 22, [top, stack(.vertical, 12, [head, body]), facts, start])
+        let col = stack(.vertical, 22, [top, head, facts, start])
         view.addSubview(col)
         col.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
