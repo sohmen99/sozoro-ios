@@ -175,8 +175,9 @@ final class MapViewController: UIViewController {
         let p = g.location(in: map)
         let c = map.convert(p, toCoordinateFrom: map)
         store.here = Coordinate(lat: c.latitude, lon: c.longitude)
-        moveMeMarker()
-        sheet.refresh()
+        // 立ち位置が変わったら、区の外の帯もその場で見直す。
+        // ここで sheet だけ描き直していたので、区の中に置いても帯が残っていた。
+        locationMoved()
     }
 
     /// 時刻が変わると混み具合も変わる。にじみも基準地点の点も入れ替える。
