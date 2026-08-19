@@ -402,5 +402,8 @@ OpenStreetMap contributors（ODbL）。国土交通省 全国の人流オープ�
 
 行き先の写真は Wikimedia Commons。**同梱している56本は、それぞれの元のライセンスのまま**で、
 このリポジトリの MIT には入りません。内訳は パブリックドメイン29 / CC0 12 / CC BY-SA 3.0 10 /
-CC BY-SA 4.0 4 / CC BY 2.0 1 / CC BY 3.0 1 / CC BY 4.0 1。撮影者・ライセンス・元ページは
-`Resources/photos.json` に1件ずつ入れてあり、到着画面にも出します。
+CC BY-SA 4.0 4 / CC BY 2.0 1 / CC BY 3.0 1 / CC BY 4.0 1。**うち17件はクレジットが義務**です。
+
+撮影者・ライセンス・元ページの全件一覧は [ATTRIBUTIONS.md](ATTRIBUTIONS.md)。
+アプリの到着画面には「撮影者 · ライセンス · Wikimedia Commons」を出しています。
+リンクと「480pxに縮小した」という但し書きは、画面に入らないので一覧のほうで受けています。
