@@ -50,8 +50,9 @@ final class GuideViewController: UIViewController {
                         body: "Twenty-one places we use to read the crowd. "
                             + "The dot is our estimate: green quiet, red busy, purple packed. "
                             + "Tap one for the day's shape and when it should clear."))
-        rows.append(row(symbol: "circle.fill", tint: Theme.mid, title: "The red dot is you",
-                        body: "Your position never leaves the phone."))
+        rows.append(row(symbol: "circle.fill", tint: Theme.ai, title: "The blue dot is you",
+                        body: "Your position never leaves the phone. "
+                            + "In Simulation mode the dot turns red and says SIM."))
 
         rows.append(section("THE CARD AT THE BOTTOM"))
         rows.append(row(symbol: "minus", title: "Drag it up and down",

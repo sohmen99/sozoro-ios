@@ -108,10 +108,10 @@ public struct Reward: Identifiable, Sendable {
         .init(id: "dusk",    symbol: "moon.stars",        title: "Night walker",
               condition: "Arrived after 19",
               titleJA: "夜の人", conditionJA: "19時すぎに 着いた") { $0.dusk >= 1 },
-        // 気分は3つ。みどりを戻したので、2つでは埋まってしまう。
-        .init(id: "both",    symbol: "square.grid.2x2",   title: "All three moods",
-              condition: "Arrived on food, on something old and on green",
-              titleJA: "三つの気分", conditionJA: "3つの気分すべてで 着いた") { $0.kinds >= 3 },
+        // 気分は2つ。みどりを外したので、3つは永久に埋まらない。
+        .init(id: "both",    symbol: "square.grid.2x2",   title: "Both moods",
+              condition: "Arrived on food and on something old",
+              titleJA: "二つの気分", conditionJA: "2つの気分どちらでも 着いた") { $0.kinds >= 2 },
         .init(id: "regular", symbol: "calendar",          title: "Regular",
               condition: "Walked on three days",
               titleJA: "常連", conditionJA: "3日に分けて 歩いた") { $0.days >= 3 }
