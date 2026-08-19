@@ -57,7 +57,6 @@ final class DemoPanel: UIView {
     private let slider = UISlider()
     private let daySeg: UISegmentedControl
     private let speedSeg = UISegmentedControl(items: ["×1", "×10", "×60"])
-    private let walkButton = UIButton(type: .system)
     var onChange: (() -> Void)?
 
     init(demo: DemoMode, store: WalkStore) {
@@ -119,19 +118,6 @@ final class DemoPanel: UIView {
             self.sync()
         }, for: .valueChanged)
 
-        var c = UIButton.Configuration.plain()
-        c.attributedTitle = AttributedString(store.t("Walk to it", "行き先まで歩く"), attributes:
-            AttributeContainer([.font: Theme.body(13, .semibold)]))
-        c.baseForegroundColor = Theme.mid
-        c.background.strokeColor = Theme.mid.withAlphaComponent(0.6)
-        c.background.strokeWidth = 1
-        c.background.cornerRadius = 9
-        c.contentInsets = .init(top: 9, leading: 12, bottom: 9, trailing: 12)
-        walkButton.configuration = c
-        walkButton.addAction(UIAction { [weak self] _ in
-            guard let self else { return }
-            self.demo.walk(store: self.store) { self.onChange?() }
-        }, for: .touchUpInside)
 
         lede.text = store.t("Place and time are yours. Tap the map to stand there.",
                             "場所も時刻も自由に置けます。地図を叩くと、そこに立ちます。")
@@ -143,7 +129,7 @@ final class DemoPanel: UIView {
         let hourRow = stack(.horizontal, 10, [hourLabel, slider], align: .center)
 
         body.axis = .vertical; body.spacing = 9
-        [lede, hourRow, daySeg, speedSeg, walkButton].forEach { body.addArrangedSubview($0) }
+        [lede, hourRow, daySeg, speedSeg].forEach { body.addArrangedSubview($0) }
 
         chevron.tintColor = Theme.mid
         chevron.setContentHuggingPriority(.required, for: .horizontal)

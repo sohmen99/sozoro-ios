@@ -85,10 +85,7 @@ final class MapViewController: UIViewController {
                     .map { UIApplication.shared.open($0) }
             },
             roundButton("seal") { [weak self] in self?.onRewards?() },
-            roundButton(demo.on ? "wand.and.stars.inverse" : "wand.and.stars") { [weak self] in
-                guard let self else { return }
-                self.onDemoToggle?(!self.demo.on)
-            }
+            simButton
         ], align: .center)
         view.addSubview(bar)
         bar.translatesAutoresizingMaskIntoConstraints = false
@@ -203,6 +200,13 @@ final class MapViewController: UIViewController {
     /// 区の外にいるとき。行き先の母集団が台東区と荒川区に寄っているので、
     /// 遠くから開いた人には、いちばん近い基準地点との関係で位置を伝える。
     private let offArea = OffAreaBanner()
+    /// シミュレーションの入り口。区の外にいるときは赤くする。
+    /// ここを押してもらわないと、外にいる人は何もできない。
+    private lazy var simButton: UIButton = roundButton(
+        demo.on ? "wand.and.stars.inverse" : "wand.and.stars") { [weak self] in
+            guard let self else { return }
+            self.onDemoToggle?(!self.demo.on)
+        }
 
     private func layoutOffArea() {
         // どちらも同じ親に入っていないと張れない。入る前に呼ばれたら何もしない。
@@ -218,18 +222,28 @@ final class MapViewController: UIViewController {
     private var offAreaConstraints: [NSLayoutConstraint] = []
 
     func refreshOffArea() {
-        guard let h = store.here else { offArea.isHidden = true; return }
-        if Ward.taito.contains(h) { offArea.isHidden = true; return }
-        guard let n = Ward.taito.nearest(to: h, among: store.landmarks) else {
-            offArea.isHidden = true; return
+        // 区の中に戻ったら、帯もボタンの色も元に戻す。
+        func calm() {
+            offArea.isHidden = true
+            simButton.configuration?.baseBackgroundColor = Theme.washi.withAlphaComponent(0.92)
+            simButton.configuration?.baseForegroundColor = Theme.ink
         }
-        let km = n.metres >= 1000 ? String(format: "%.1f km", n.metres / 1000)
-                                  : "\(Int((n.metres / 10).rounded()) * 10) m"
-        let dir = Geo.compassEN[Geo.compassIndex(n.bearing)]
-        offArea.set(title: "You are outside Taito",
-                    body: "\(store.name(n.spot)) is \(km) to the \(dir). "
-                        + "Places to walk to thin out this far from the ward.")
+        guard let h = store.here else { calm(); return }
+        if Ward.taito.contains(h) { calm(); return }
+        // どこまで何km、は言わない。ここから歩ける場所は無いので、数字は役に立たない。
+        // やることだけ書く。押せばそのまま入れる。
+        offArea.set(title: store.t("You are outside Taito", "台東区の外にいます"),
+                    body: store.t(
+                        "Nothing here to walk to. Turn on Simulation mode to stand in Ueno "
+                      + "and play from anywhere — then tap the map to move.",
+                        "ここから歩ける場所はありません。シミュレーションモードを入れると上野に立てて、"
+                      + "どこにいても遊べます。地図を叩けばその場所に移れます。"),
+                    action: store.t("Turn on Simulation mode", "シミュレーションモードを入れる"))
+        offArea.onTap = { [weak self] in self?.onDemoToggle?(true) }
         offArea.isHidden = false
+        // 杖のボタンも赤くする。帯とボタンが同じ色なら、どれを押すのか迷わない。
+        simButton.configuration?.baseBackgroundColor = Theme.busy
+        simButton.configuration?.baseForegroundColor = .white
         layoutOffArea()
     }
 
@@ -262,13 +276,31 @@ final class OffAreaBanner: UIView {
         icon.setContentHuggingPriority(.required, for: .horizontal)
         let col = stack(.vertical, 3, [titleLabel, bodyLabel])
         let row = stack(.horizontal, 11, [icon, col], align: .top)
-        addSubview(row)
-        row.pin(to: self, insets: .init(top: 12, left: 13, bottom: 12, right: 13))
+        let all = stack(.vertical, 10, [row, actionLabel])
+        addSubview(all)
+        all.pin(to: self, insets: .init(top: 12, left: 13, bottom: 12, right: 13))
+
+        // 読むだけの帯だと、外にいる人はここで詰む。押せば入れるようにする。
+        isUserInteractionEnabled = true
+        addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapped)))
     }
     required init?(coder: NSCoder) { fatalError() }
 
-    func set(title: String, body: String) {
-        titleLabel.text = title; bodyLabel.text = body
+    private let actionLabel: UILabel = {
+        let l = makeLabel("", Theme.body(13, .semibold), .white, align: .center)
+        l.backgroundColor = UIColor.white.withAlphaComponent(0.18)
+        l.layer.cornerRadius = 9
+        l.layer.cornerCurve = .continuous
+        l.clipsToBounds = true
+        l.translatesAutoresizingMaskIntoConstraints = false
+        l.heightAnchor.constraint(equalToConstant: 38).isActive = true
+        return l
+    }()
+    var onTap: (() -> Void)?
+    @objc private func tapped() { onTap?() }
+
+    func set(title: String, body: String, action: String) {
+        titleLabel.text = title; bodyLabel.text = body; actionLabel.text = action
     }
 }
 

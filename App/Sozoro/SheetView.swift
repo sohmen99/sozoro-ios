@@ -209,8 +209,8 @@ final class SheetView: UIView {
             attributes: AttributeContainer([.font: Theme.body(16, .semibold)]))
         if outside {
             noteLabel.text = store.t(
-                "You are outside Taito. The places we can send you to are all back that way.",
-                "台東区の外にいます。行き先はみな、そちら側に寄っています。")
+                "You are outside Taito. Simulation mode lets you play from here.",
+                "台東区の外にいます。シミュレーションモードなら、ここからでも遊べます。")
             noteLabel.isHidden = false
         }
         peekSummary.text = [
