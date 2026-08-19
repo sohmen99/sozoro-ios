@@ -35,12 +35,14 @@ final class CoverViewController: UIViewController {
 
         // 「最後にわかる」は決まりごとの説明でしかなかった。針の先で何かが待っている、
         // という誘いに替える。英語は長いので少し落とす。
-        // 売りは「伏せること」ではない。伏せるのは遊び方。
+        // 大きいほうは、やること。小さいほうは、何のためにやるのか。
         // 上野・浅草で、混雑を避けながら、まだ見つかっていない場所を探し当てる遊び。
         // 「誰もいない場所」ではない。空っぽなのではなく、まだ見つかっていない。
-        let head = Theme.headline(ja ? "まだ見つけていない場所を、探し当てる"
-                                     : "Hunt down what you haven't found yet",
-                                  ja ? 25 : 28, .white)
+        let head = Theme.headline(ja ? "針の指す方へ" : "Follow the needle",
+                                  ja ? 34 : 36, .white)
+        let creed = makeLabel(ja ? "まだ見つけていない場所を、探し当てる"
+                                 : "Hunt down what you haven't found yet",
+                              Theme.body(15.5), Theme.mutedDark, lines: 0)
 
         // 3行は「何が良いのか」の順に。仕掛けの説明から始めない。
         let facts = stack(.vertical, 12, ja ? [
@@ -63,7 +65,7 @@ final class CoverViewController: UIViewController {
         start.addAction(UIAction { [weak self] _ in self?.onStart?() }, for: .touchUpInside)
 
         let top = stack(.horizontal, 10, [mark, UIView()], align: .center)
-        let col = stack(.vertical, 22, [top, head, facts, start])
+        let col = stack(.vertical, 22, [top, stack(.vertical, 8, [head, creed]), facts, start])
         view.addSubview(col)
         col.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
