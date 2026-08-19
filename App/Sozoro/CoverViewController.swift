@@ -44,11 +44,9 @@ final class CoverViewController: UIViewController {
 
         // 3行は「何が良いのか」の順に。仕掛けの説明から始めない。
         let facts = stack(.vertical, 12, ja ? [
-            fact("探すのは、まだ知らない場所", "156件は台東区・荒川区の文化財と食べもの。よく知られていないものがほとんどです。"),
             fact("混雑には送り込まない", "人流の実測値で重みを付け、混んでいるエリアは丸ごと除外します。"),
             fact("道具は、コンパスだけ", "方角と残りの距離。名前も写真も、着くまで出しません。")
         ] : [
-            fact("The prize is a place you don't know yet", "156 of them, from Taito and Arakawa's own registers. Little-known, most of them."),
             fact("It will not send you into a crowd", "Weighted on measured footfall; crowded areas are excluded outright."),
             fact("Your only tool is a compass", "A bearing and a distance. No name, no photo, until you get there.")
         ])
