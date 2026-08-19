@@ -36,22 +36,23 @@ final class CoverViewController: UIViewController {
         // 「最後にわかる」は決まりごとの説明でしかなかった。針の先で何かが待っている、
         // という誘いに替える。英語は長いので少し落とす。
         // 売りは「伏せること」ではない。伏せるのは遊び方。
-        // 上野・浅草で、混雑を避けながら、見つかりにくい良い場所を探し当てる遊び。
-        let head = Theme.headline(ja ? "人のいない、いい場所を探し当てる"
-                                     : "Hunt down the places the crowds miss",
-                                  ja ? 27 : 28, .white)
+        // 上野・浅草で、混雑を避けながら、まだ見つかっていない場所を探し当てる遊び。
+        // 「誰もいない場所」ではない。空っぽなのではなく、まだ見つかっていない。
+        let head = Theme.headline(ja ? "まだ見つけていない場所を、探し当てる"
+                                     : "Hunt down what you haven't found yet",
+                                  ja ? 25 : 28, .white)
         let body = makeLabel(
-            ja ? "上野・浅草には、誰も前に立っていない良い場所があります。そぞろは一つ選んで針を向けるだけ。探し当てるのはあなたです。"
-               : "Ueno and Asakusa are full of good places nobody is standing in front of. Sozoro picks one and points a needle at it. The finding is yours.",
+            ja ? "上野・浅草には、まだ見つかっていない場所がいくつも残っています。そぞろは一つ選んで針を向けるだけ。探し当てるのはあなたです。"
+               : "Ueno and Asakusa still hide hundreds of places you have never heard of. Sozoro picks one and points a needle at it. The finding is yours.",
             Theme.body(14), Theme.mutedDark, lines: 0)
 
         // 3行は「何が良いのか」の順に。仕掛けの説明から始めない。
         let facts = stack(.vertical, 12, ja ? [
-            fact("探すのは、いい場所", "156件は台東区・荒川区の文化財と食べもの。観光地図には出てきません。"),
+            fact("探すのは、まだ知らない場所", "156件は台東区・荒川区の文化財と食べもの。観光地図には出てきません。"),
             fact("混雑には送り込まない", "人流の実測値で重みを付け、混んでいるエリアは丸ごと除外します。"),
             fact("道具は、コンパスだけ", "方角と残りの距離。名前も写真も、着くまで出しません。")
         ] : [
-            fact("The prize is a good place", "156 of them, from Taito and Arakawa's own registers. Not on the tourist map."),
+            fact("The prize is a place you don't know yet", "156 of them, from Taito and Arakawa's own registers. Not on the tourist map."),
             fact("It will not send you into a crowd", "Weighted on measured footfall; crowded areas are excluded outright."),
             fact("Your only tool is a compass", "A bearing and a distance. No name, no photo, until you get there.")
         ])
