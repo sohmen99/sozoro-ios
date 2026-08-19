@@ -47,14 +47,6 @@ final class MapViewController: UIViewController {
 
         refreshHeat()
 
-        // 遊べる範囲のちょい外までで止める。世界地図まで引けると、迷子になる。
-        let play = MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 35.7180, longitude: 139.7880),
-            latitudinalMeters: 16000, longitudinalMeters: 16000)
-        map.setCameraBoundary(MKMapView.CameraBoundary(coordinateRegion: play), animated: false)
-        map.setCameraZoomRange(MKMapView.CameraZoomRange(minCenterCoordinateDistance: 900,
-                                                        maxCenterCoordinateDistance: 22000),
-                               animated: false)
         if demo.on {
             // デモでは地図を叩いた場所に立つ。実測は起こさない。
             let tap = UITapGestureRecognizer(target: self, action: #selector(tapped(_:)))
@@ -139,21 +131,36 @@ final class MapViewController: UIViewController {
         // シートの高さが決まる前に呼ばれると枠がずれる。決まってから一度だけ。
         guard !framed, view.bounds.height > 0, sheet.bounds.height > 0 else { return }
         framed = true
-        // 縮尺はウェブ版の図と同じ 16m/px にそろえる。ここを詰めないと、
-        // にじみの半径だけ実寸で正しくても、画面上は倍の大きさになって
-        // 全部が重なった一枚のもやに見える。
-        let pad = UIEdgeInsets(top: 96, left: 24, bottom: sheet.bounds.height + 16, right: 24)
-        let boxW = max(80, view.bounds.width - pad.left - pad.right)
-        let boxH = max(80, view.bounds.height - pad.top - pad.bottom)
-        let wideM = 16.0 * boxW                                   // 16m/px × 見えている幅
-        let here = store.here ?? Coordinate(lat: 35.7138, lon: 139.7772)
-        let hot = Coordinate(lat: 35.7138, lon: 139.7813)         // 上野と浅草のあいだ
-        let mid = Coordinate(lat: (here.lat + hot.lat) / 2, lon: (here.lon + hot.lon) / 2)
-        let ppm = MKMapPointsPerMeterAtLatitude(mid.lat)
-        let c = MKMapPoint(CLLocationCoordinate2D(latitude: mid.lat, longitude: mid.lon))
-        let w = wideM * ppm, h = w * boxH / boxW
-        map.setVisibleMapRect(MKMapRect(x: c.x - w / 2, y: c.y - h / 2, width: w, height: h),
-                              edgePadding: pad, animated: false)
+        // 見せる幅をこちらで決める。edgePadding で合わせると、シートの高さ次第で
+        // 何kmになるか分からず、外枠や引きの上限に切られた結果を見ることになる。
+        //
+        // 横 4.5km。台東区の幅がちょうど画面いっぱいに入る。
+        // シートが下半分を覆うので、その上の帯の真ん中に上野・浅草が来るよう
+        // 地図の中心を南へずらす。
+        let wideM = 4500.0
+        let hot = Coordinate(lat: 35.7143, lon: 139.7860)      // 上野と浅草のあいだ
+        let top = 96.0, sheetH = Double(sheet.bounds.height)
+        let viewH = Double(view.bounds.height), viewW = Double(view.bounds.width)
+        let bandMid = (top + (viewH - sheetH)) / 2
+        let shiftPt = viewH / 2 - bandMid                       // 中心から帯の中心までの差
+        let mPerPt = wideM / viewW
+        let lat = hot.lat - (shiftPt * mPerPt) / 111132
+        map.setRegion(MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: lat, longitude: hot.lon),
+            latitudinalMeters: wideM * viewH / viewW, longitudinalMeters: wideM), animated: false)
+
+        // 外枠は、決めた枠取りを基準にして張る。先に張ると、南へずらしたぶんが
+        // 枠の外に出て、収めるために勝手に寄ってしまう。
+        // 横は行き先・基準地点・駅が全部入る 9km。縦は見えている高さ＋少し。
+        let shown = map.region
+        map.setCameraBoundary(MKMapView.CameraBoundary(coordinateRegion: MKCoordinateRegion(
+            center: shown.center,
+            latitudinalMeters: shown.span.latitudeDelta * 111132 + 3000,
+            longitudinalMeters: 9000)), animated: false)
+        map.setCameraZoomRange(MKMapView.CameraZoomRange(
+            minCenterCoordinateDistance: 900,
+            maxCenterCoordinateDistance: map.camera.centerCoordinateDistance * 1.35),
+                               animated: false)
     }
 
     /// 気分や歩き方が変わったとき。地図はそのままで、シートだけ描き直す。
