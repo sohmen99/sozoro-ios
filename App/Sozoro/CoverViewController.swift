@@ -42,17 +42,17 @@ final class CoverViewController: UIViewController {
                                      : "Hunt down what you haven't found yet",
                                   ja ? 25 : 28, .white)
         let body = makeLabel(
-            ja ? "上野・浅草には、まだ見つかっていない場所がいくつも残っています。そぞろは一つ選んで針を向けるだけ。探し当てるのはあなたです。"
-               : "Ueno and Asakusa still hide hundreds of places you have never heard of. Sozoro picks one and points a needle at it. The finding is yours.",
+            ja ? "上野・浅草には、混んだ通りから二本外れたところに、まだよく知られていない場所がいくつもあります。そぞろは一つ選んで針を向けるだけ。探し当てるのはあなたです。"
+               : "Ueno and Asakusa are full of little-known places, a few streets off the crowded ones. Sozoro picks one and points a needle at it. The finding is yours.",
             Theme.body(14), Theme.mutedDark, lines: 0)
 
         // 3行は「何が良いのか」の順に。仕掛けの説明から始めない。
         let facts = stack(.vertical, 12, ja ? [
-            fact("探すのは、まだ知らない場所", "156件は台東区・荒川区の文化財と食べもの。観光地図には出てきません。"),
+            fact("探すのは、まだ知らない場所", "156件は台東区・荒川区の文化財と食べもの。よく知られていないものがほとんどです。"),
             fact("混雑には送り込まない", "人流の実測値で重みを付け、混んでいるエリアは丸ごと除外します。"),
             fact("道具は、コンパスだけ", "方角と残りの距離。名前も写真も、着くまで出しません。")
         ] : [
-            fact("The prize is a place you don't know yet", "156 of them, from Taito and Arakawa's own registers. Not on the tourist map."),
+            fact("The prize is a place you don't know yet", "156 of them, from Taito and Arakawa's own registers. Little-known, most of them."),
             fact("It will not send you into a crowd", "Weighted on measured footfall; crowded areas are excluded outright."),
             fact("Your only tool is a compass", "A bearing and a distance. No name, no photo, until you get there.")
         ])
