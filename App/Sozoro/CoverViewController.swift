@@ -39,8 +39,8 @@ final class CoverViewController: UIViewController {
                                      : "Something is waiting at the tip of the needle",
                                   ja ? 27 : 26, .white)
         let body = makeLabel(
-            ja ? "針と距離だけ。名前も、写真も、選ばれた理由も、あなたが着いたときに届きます。"
-               : "A needle and a distance, nothing else. The name, the photograph and the reason it was chosen all arrive when you do.",
+            ja ? "針と距離だけ。名前も、写真も、あなたが着いたときに届きます。"
+               : "A needle and a distance, nothing else. The name and the photograph arrive when you do.",
             Theme.body(14), Theme.mutedDark, lines: 0)
 
         let facts = stack(.vertical, 12, ja ? [
