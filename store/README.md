@@ -2,8 +2,16 @@
 
 ## スクリーンショット
 
-`screenshots-6.9/` … 1320 × 2868（iPhone 6.9インチ）5枚。App Store Connect が
-必須にしているのはこの1サイズだけで、他のサイズは自動で縮められます。
+| フォルダ | 大きさ | 機種 |
+|---|---|---|
+| `screenshots-6.9/` | 1320 × 2868 | iPhone 16 Pro Max |
+| `screenshots-6.5/` | 1242 × 2688 | iPhone 11 Pro Max |
+
+どちらも同じ5枚です。6.5インチ機はシミュレータに無かったので作りました。
+
+```bash
+xcrun simctl create "sozoro-65" com.apple.CoreSimulator.SimDeviceType.iPhone-11-Pro-Max
+```
 
 | | 画面 | 何が写っているか |
 |---|---|---|
