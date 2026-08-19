@@ -178,11 +178,11 @@ python3 tools/photos.py ~/Downloads/sozoro_matched_185.xlsx
 
 | | |
 |---|---|
-| プライバシーと問い合わせ | https://sohmen99.github.io/tokyo-sozoro/privacy.html |
+| プライバシーと問い合わせ | https://sites.google.com/view/tokyo-sozoro-sup-privacy |
 
 App Store の **Privacy Policy URL と Support URL の両方**にこの1本を使います。
-アプリからは地図の上のバー、印の左の `?` で開きます。ページ自体は
-[tokyo-sozoro](https://github.com/sohmen99/tokyo-sozoro) の `privacy.html`。
+アプリからは地図の上のバー、印の左の `?` で開きます。ページは Google Sites。
+連絡先は sohmenapp@gmail.com。
 
 ## 出すときの identifier
 

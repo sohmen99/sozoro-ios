@@ -81,7 +81,7 @@ final class MapViewController: UIViewController {
             UIView(),
             // 困ったときの窓口。プライバシーと問い合わせ先を1枚にまとめたページ。
             roundButton("questionmark") {
-                URL(string: "https://sohmen99.github.io/tokyo-sozoro/privacy.html")
+                URL(string: "https://sites.google.com/view/tokyo-sozoro-sup-privacy")
                     .map { UIApplication.shared.open($0) }
             },
             roundButton("seal") { [weak self] in self?.onRewards?() },
