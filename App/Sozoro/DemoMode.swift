@@ -58,6 +58,9 @@ final class DemoPanel: UIView {
     private let daySeg: UISegmentedControl
     private let speedSeg = UISegmentedControl(items: ["×1", "×10", "×60"])
     var onChange: (() -> Void)?
+    /// 盤から抜ける。杖のボタンをもう一度押せば同じことができるが、
+    /// 開いている盤の中に出口が無いと、入った人は戻り方を探すことになる。
+    var onExit: (() -> Void)?
 
     init(demo: DemoMode, store: WalkStore) {
         self.demo = demo; self.store = store
@@ -128,8 +131,12 @@ final class DemoPanel: UIView {
         hourLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 52).isActive = true
         let hourRow = stack(.horizontal, 10, [hourLabel, slider], align: .center)
 
+        let exit = Theme.button(.tertiary,
+                                store.t("Leave simulation", "シミュレーションを終わる"),
+                                small: true) { [weak self] in self?.onExit?() }
+
         body.axis = .vertical; body.spacing = 9
-        [lede, hourRow, daySeg, speedSeg].forEach { body.addArrangedSubview($0) }
+        [lede, hourRow, daySeg, speedSeg, exit].forEach { body.addArrangedSubview($0) }
 
         chevron.tintColor = Theme.mid
         chevron.setContentHuggingPriority(.required, for: .horizontal)

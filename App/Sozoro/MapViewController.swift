@@ -97,6 +97,7 @@ final class MapViewController: UIViewController {
 
         if demo.on {
             panel.onChange = { [weak self] in self?.locationMoved(); self?.refreshHeat() }
+            panel.onExit = { [weak self] in self?.onDemoToggle?(false) }
             view.addSubview(panel)
             panel.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
